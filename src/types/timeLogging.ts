@@ -154,3 +154,24 @@ export interface WeeklySummaryData {
     totalHours: number;
   }[];
 }
+
+// Smart suggestion for task recommendations
+export interface SmartSuggestion {
+  task: ProjectTask;
+  projectTitle: string;
+  reason: string;
+  urgency: "high" | "medium" | "low";
+  icon: "deadline" | "progress" | "efficiency" | "priority";
+}
+
+// Efficiency metrics data
+export interface EfficiencyData {
+  efficiency: number;
+  weeklyTrend?: number;
+  tips?: React.ReactNode[];
+  breakdown?: {
+    onTime: number;
+    overEstimate: number;
+    avgTaskTime: number;
+  };
+}
