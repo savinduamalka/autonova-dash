@@ -144,3 +144,12 @@ export interface TimeLog {
   note?: string;
   loggedAt: string; // ISO 8601 format
 }
+
+// Filter options for time log filtering
+export interface FilterOptions {
+  startDate: string;
+  endDate: string;
+  projectId: string;
+  taskId: string;
+  status: string;
+}
