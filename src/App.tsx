@@ -23,6 +23,7 @@ import CustomerDashboard from "./pages/customer/CustomerDashboard";
 
 // Employee pages
 import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
+import TimeLoggingPage from "./pages/employee/TimeLoggingPage";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -68,6 +69,7 @@ const App = () => (
             >
               <Route index element={<Navigate to="/employee/dashboard" replace />} />
               <Route path="dashboard" element={<EmployeeDashboard />} />
+              <Route path="time-logging" element={<TimeLoggingPage />} />
             </Route>
 
             {/* Admin routes */}

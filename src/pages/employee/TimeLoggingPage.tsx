@@ -646,3 +646,5 @@ export const TimeLoggingPage = () => {
     </div>
   );
 };
+
+export default TimeLoggingPage;
