@@ -134,3 +134,13 @@ export interface Project {
   vehicle?: Vehicle;
   tasks?: ProjectTask[];
 }
+
+// Time log data for history display
+export interface TimeLog {
+  id: string;
+  projectId: string;
+  taskId: string;
+  hours: number;
+  note?: string;
+  loggedAt: string; // ISO 8601 format
+}
