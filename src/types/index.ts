@@ -1,28 +1,46 @@
-export type Role = 'Admin' | 'Employee' | 'Customer';
+export type Role = 'ADMIN' | 'EMPLOYEE' | 'CUSTOMER';
 
-export type User = {
-  id: string;
-  name: string;
+export interface AuthUser {
+  id: number;
+  userName: string;
   email: string;
-  phone?: string;
-  address?: string;
-  roles: Role[];
-  avatarUrl?: string;
-  status: 'active' | 'disabled';
-};
+  role: string;
+}
 
-export type Vehicle = {
-  id: string;
-  customerId: string;
+export interface Customer {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  vehicles: Vehicle[];
+}
+
+export interface CustomerUpdate {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+}
+
+export interface Vehicle {
+  id: number;
   make: string;
   model: string;
   year: number;
+  vin: string;
   licensePlate: string;
-};
+}
+
+export type VehicleInput = Omit<Vehicle, 'id'>;
 
 export * from './appointment';
 
-export type ProjectStatus = 'planned' | 'in_progress' | 'blocked' | 'completed' | 'canceled';
+export type ProjectStatus =
+  | 'planned'
+  | 'in_progress'
+  | 'blocked'
+  | 'completed'
+  | 'canceled';
 
 export type Project = {
   id: string;
@@ -84,11 +102,8 @@ export type ServicePrice = {
   active: boolean;
 };
 
-export type AuthTokens = {
-  accessToken: string;
-  refreshToken: string;
-};
-
-export type LoginResponse = AuthTokens & {
-  user: User;
-};
+export interface LoginResponse {
+  token: string;
+  type: string;
+  user: AuthUser;
+}

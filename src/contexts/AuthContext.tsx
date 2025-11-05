@@ -1,12 +1,13 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import * as authService from '@/services/authService';
-
-interface User {
-  id: number;
-  email: string;
-  userName: string;
-  role: string;
-}
+import type { AuthUser } from '@/types';
+import type { MessageResponse } from '@/services/authService';
 
 interface LoginCredentials {
   email: string;
@@ -22,10 +23,10 @@ interface SignupData {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   loading: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
-  signup: (data: SignupData) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<AuthUser>;
+  signup: (data: SignupData) => Promise<MessageResponse>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -33,49 +34,60 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(() =>
+    authService.getStoredUser()
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Check if user is already authenticated
     const initAuth = async () => {
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-        try {
-          const currentUser = await authService.getUserInfo();
-          setUser(currentUser);
-        } catch (error) {
-          console.error('Failed to get current user:', error);
-          // Clear invalid tokens
-          localStorage.clear();
-        }
+      if (!authService.isAuthenticated()) {
+        setUser(null);
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+
+      const storedUser = authService.getStoredUser();
+      if (storedUser) {
+        setUser(storedUser);
+      }
+
+      try {
+        await authService.getProfile();
+      } catch (error) {
+        console.error('Failed to validate current session:', error);
+        authService.logout();
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
     initAuth();
   }, []);
 
   const login = async (credentials: LoginCredentials) => {
-    const response = await authService.login(credentials.email, credentials.password);
-    setUser(response.userInfo);
+    const loggedInUser = await authService.login(
+      credentials.email,
+      credentials.password
+    );
+    setUser(loggedInUser);
+    return loggedInUser;
   };
 
   const signup = async (data: SignupData) => {
-    // Register the user
-    await authService.register({
+    return authService.register({
       userName: data.userName,
       email: data.email,
       password: data.password,
       contactOne: data.contactNumber,
-      role: data.role
+      role: data.role,
     });
-    // Note: After registration, user needs to login separately
-    // The backend doesn't auto-login after registration
   };
 
   const logout = async () => {
-    await authService.logout();
+    authService.logout();
     setUser(null);
   };
 
