@@ -157,8 +157,6 @@ export const TimeLoggingPage = () => {
 
   const fetchStats = async () => {
     try {
-      // TODO: Create backend endpoint for stats summary
-      // For now, calculate from time logs
       const logs = await timeLoggingApi.getMyTimeLogs();
       const projects = await timeLoggingApi.getAssignedProjects();
 
@@ -187,14 +185,8 @@ export const TimeLoggingPage = () => {
         (p) => p.status === "IN_PROGRESS"
       ).length;
 
-      // Fetch tasks to count pending ones
-      const allTasks = await Promise.all(
-        projects.map((p) =>
-          timeLoggingApi.getProjectTasks(p.id).catch(() => [])
-        )
-      );
-      const pendingTasks = allTasks
-        .flat()
+      const pendingTasks = projects
+        .flatMap((p) => p.tasks || [])
         .filter((t) => t.status !== "COMPLETED").length;
 
       setStats({
@@ -225,9 +217,73 @@ export const TimeLoggingPage = () => {
       setSmartSuggestions(data);
     } catch (error) {
       console.error("Error fetching suggestions:", error);
-      // Use mock data as fallback
-      setSmartSuggestions(getMockSuggestions());
+      // Generate suggestions from current projects as fallback
+      generateSuggestionsFromProjects();
     }
+  };
+
+  const generateSuggestionsFromProjects = () => {
+    const todoTasks: SmartSuggestion[] = [];
+
+    projects.forEach((project) => {
+      project.tasks
+        ?.filter(
+          (task) => task.status === "TODO" || task.status === "IN_PROGRESS"
+        )
+        .forEach((task) => {
+          let urgency: "high" | "medium" | "low" = "low";
+          let reason = "Recommended based on your schedule";
+          let icon: "deadline" | "progress" | "efficiency" | "priority" =
+            "efficiency";
+
+          // Determine urgency based on due date
+          if (task.dueDate) {
+            const daysUntilDue = Math.floor(
+              (new Date(task.dueDate).getTime() - Date.now()) /
+                (1000 * 60 * 60 * 24)
+            );
+            if (daysUntilDue <= 1) {
+              urgency = "high";
+              reason = `Due ${daysUntilDue === 0 ? "today" : "tomorrow"}`;
+              icon = "deadline";
+            } else if (daysUntilDue <= 3) {
+              urgency = "medium";
+              reason = `Due in ${daysUntilDue} days`;
+              icon = "deadline";
+            }
+          }
+
+          if (task.priority === "HIGH") {
+            urgency = urgency === "high" ? "high" : "medium";
+            icon = "priority";
+            reason = "High priority task";
+          }
+
+          if (task.status === "IN_PROGRESS" && task.actualHours > 0) {
+            const progress = task.estimatedHours
+              ? (task.actualHours / (task.estimatedHours || 1)) * 100
+              : 0;
+            reason = `Already started - ${progress.toFixed(0)}% complete`;
+            icon = "progress";
+          }
+
+          todoTasks.push({
+            task,
+            projectTitle: project.title,
+            reason,
+            urgency,
+            icon,
+          });
+        });
+    });
+
+    // Sort by urgency (high > medium > low) and take top 3
+    const sorted = todoTasks.sort((a, b) => {
+      const urgencyOrder = { high: 3, medium: 2, low: 1 };
+      return urgencyOrder[b.urgency] - urgencyOrder[a.urgency];
+    });
+
+    setSmartSuggestions(sorted.slice(0, 3));
   };
 
   const fetchEfficiency = async () => {
@@ -413,7 +469,6 @@ export const TimeLoggingPage = () => {
   };
 
   const handleEditTimeLog = async (log: TimeLog) => {
-    // TODO: Implement edit functionality
     toast.info("Edit functionality coming soon");
   };
 
@@ -426,7 +481,6 @@ export const TimeLoggingPage = () => {
   const applyFiltersToTimeLogs = () => {
     let filtered = [...timeLogs];
 
-    // Filter by date range
     if (appliedFilters.startDate) {
       filtered = filtered.filter(
         (log) => new Date(log.loggedAt) >= new Date(appliedFilters.startDate!)
@@ -439,94 +493,17 @@ export const TimeLoggingPage = () => {
       );
     }
 
-    // Filter by project
     if (appliedFilters.projectId) {
       filtered = filtered.filter(
         (log) => log.projectId === appliedFilters.projectId
       );
     }
 
-    // Filter by task
     if (appliedFilters.taskId) {
       filtered = filtered.filter((log) => log.taskId === appliedFilters.taskId);
     }
 
-    // Filter by status (Add status to TimeLog)
-    if (appliedFilters.status) {
-      // Implement status filtering
-    }
-
     setFilteredTimeLogs(filtered);
-  };
-
-  // MOCK DATA FUNCTIONS (FALLBACK)
-
-  const getMockSuggestions = (): SmartSuggestion[] => {
-    // Get first 3 TODO tasks from projects
-    const todoTasks: SmartSuggestion[] = [];
-
-    projects.forEach((project) => {
-      project.tasks
-        ?.filter(
-          (task) => task.status === "TODO" || task.status === "IN_PROGRESS"
-        )
-        .slice(0, 3)
-        .forEach((task) => {
-          let urgency: "high" | "medium" | "low" = "low";
-          let reason = "Recommended based on your schedule";
-          let icon: "deadline" | "progress" | "efficiency" | "priority" =
-            "efficiency";
-
-          // Determine urgency based on due date
-          if (task.dueDate) {
-            const daysUntilDue = Math.floor(
-              (new Date(task.dueDate).getTime() - Date.now()) /
-                (1000 * 60 * 60 * 24)
-            );
-            if (daysUntilDue <= 1) {
-              urgency = "high";
-              reason = `Due ${daysUntilDue === 0 ? "today" : "tomorrow"}`;
-              icon = "deadline";
-            } else if (daysUntilDue <= 3) {
-              urgency = "medium";
-              reason = `Due in ${daysUntilDue} days`;
-              icon = "deadline";
-            }
-          }
-
-          // Check priority
-          if (task.priority === "HIGH") {
-            urgency = urgency === "high" ? "high" : "medium";
-            icon = "priority";
-            reason = "High priority task";
-          }
-
-          // Check if in progress
-          if (task.status === "IN_PROGRESS" && task.actualHours > 0) {
-            const progress = task.estimatedHours
-              ? (task.actualHours / task.estimatedHours) * 100
-              : 0;
-            reason = `Already started - ${progress.toFixed(0)}% complete`;
-            icon = "progress";
-          }
-
-          todoTasks.push({
-            task,
-            projectTitle: project.title,
-            reason,
-            urgency,
-            icon,
-          });
-        });
-    });
-
-    // Sort by urgency (high > medium > low)
-    return todoTasks
-      .sort((a, b) => {
-        const urgencyOrder = { high: 3, medium: 2, low: 1 };
-        return urgencyOrder[b.urgency] - urgencyOrder[a.urgency];
-      })
-      .slice(0, 3);
   };
 
   // Rendering
