@@ -5,21 +5,62 @@ export interface AuthUser {
   userName: string;
   email: string;
   role: string;
+  name?: string | null;
+  avatarUrl?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  contactOne?: string | null;
+  contactTwo?: string | null;
+  address?: string | null;
+  enabled?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ProfileUser extends AuthUser {
+  password?: string;
+}
+
+export interface ProfileCustomer {
+  id: number;
+  firstName?: string | null;
+  lastName?: string | null;
+  email: string;
+  phoneNumber?: string | null;
+  vehicles?: Vehicle[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ProfileResponse {
+  user: ProfileUser;
+  customer?: ProfileCustomer | null;
 }
 
 export interface Customer {
   id: number;
+  userName: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  vehicles: Vehicle[];
+  firstName?: string | null;
+  lastName?: string | null;
+  contactOne: string;
+  phoneNumber?: string | null;
+  contactTwo?: string | null;
+  address?: string | null;
+  enabled?: boolean;
+  vehicles?: Vehicle[];
 }
 
 export interface CustomerUpdate {
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
+  userName?: string;
+  email?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  contactOne?: string;
+  contactTwo?: string | null;
+  address?: string | null;
+  password?: string;
+  enabled?: boolean;
 }
 
 export interface Vehicle {
@@ -29,6 +70,9 @@ export interface Vehicle {
   year: number;
   vin: string;
   licensePlate: string;
+  customerId?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export type VehicleInput = Omit<Vehicle, 'id'>;

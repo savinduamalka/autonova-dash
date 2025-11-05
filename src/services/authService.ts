@@ -6,8 +6,8 @@ import {
 } from '@/lib/api/client';
 import type {
   AuthUser,
-  Customer,
   CustomerUpdate,
+  ProfileResponse,
   Vehicle,
   VehicleInput,
   LoginResponse,
@@ -20,6 +20,8 @@ export interface RegisterData {
   email: string;
   password: string;
   contactOne: string;
+  contactTwo?: string | null;
+  address?: string | null;
   role: 'CUSTOMER' | 'EMPLOYEE' | 'ADMIN';
 }
 
@@ -73,10 +75,10 @@ export const register = (userData: RegisterData) =>
     body: JSON.stringify(userData),
   });
 
-export const getProfile = () => api<Customer>('/api/customers/me');
+export const getProfile = () => api<ProfileResponse>('/api/users/me');
 
-export const updateProfile = (payload: CustomerUpdate) =>
-  api<Customer>('/api/customers/me', {
+export const updateProfile = (userId: number, payload: CustomerUpdate) =>
+  api<ProfileResponse | MessageResponse>(`/api/users/${userId}`, {
     method: 'PUT',
     body: JSON.stringify(payload),
   });
