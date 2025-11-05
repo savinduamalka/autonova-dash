@@ -29,9 +29,15 @@ export const TimeLoggingTabs = ({
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="active">{activeTimerContent}</TabsContent>
-      <TabsContent value="logs">{timeLogsContent}</TabsContent>
-      <TabsContent value="summary">{weeklySummaryContent}</TabsContent>
+      <TabsContent value="active" className="mt-0">
+        {activeTimerContent}
+      </TabsContent>
+      <TabsContent value="logs" className="mt-0">
+        {timeLogsContent}
+      </TabsContent>
+      <TabsContent value="summary" className="mt-0">
+        {weeklySummaryContent}
+      </TabsContent>
     </Tabs>
   );
 };

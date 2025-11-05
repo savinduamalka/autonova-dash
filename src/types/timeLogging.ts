@@ -142,7 +142,6 @@ export interface FilterOptions {
   endDate: string;
   projectId: string;
   taskId: string;
-  status: string;
 }
 
 // Weekly summary data for analytics

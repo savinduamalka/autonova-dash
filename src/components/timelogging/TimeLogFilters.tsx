@@ -25,9 +25,8 @@ export const TimeLogFilters = ({
   const [filters, setFilters] = useState<FilterOptions>({
     startDate: "",
     endDate: "",
-    projectId: "",
-    taskId: "",
-    status: "",
+    projectId: "all",
+    taskId: "all",
   });
 
   const handleFilterChange = (key: keyof FilterOptions, value: string) => {
@@ -42,9 +41,8 @@ export const TimeLogFilters = ({
     const emptyFilters: FilterOptions = {
       startDate: "",
       endDate: "",
-      projectId: "",
-      taskId: "",
-      status: "",
+      projectId: "all",
+      taskId: "all",
     };
     setFilters(emptyFilters);
     onFilterChange(emptyFilters);
@@ -116,7 +114,7 @@ export const TimeLogFilters = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Start Date */}
         <div>
           <Label htmlFor="startDate" className="flex items-center gap-1">
@@ -158,7 +156,7 @@ export const TimeLogFilters = ({
               <SelectValue placeholder="All projects" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Projects</SelectItem>
+              <SelectItem value="all">All Projects</SelectItem>
               {projects.map((project) => (
                 <SelectItem key={project.id} value={project.id}>
                   {project.title}
@@ -180,31 +178,12 @@ export const TimeLogFilters = ({
               <SelectValue placeholder="All tasks" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Tasks</SelectItem>
+              <SelectItem value="all">All Tasks</SelectItem>
               {selectedProject?.tasks?.map((task) => (
                 <SelectItem key={task.id} value={task.id}>
                   {task.taskName}
                 </SelectItem>
               ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Status Filter */}
-        <div>
-          <Label htmlFor="statusFilter">Status</Label>
-          <Select
-            value={filters.status}
-            onValueChange={(value) => handleFilterChange("status", value)}
-          >
-            <SelectTrigger className="mt-1">
-              <SelectValue placeholder="All statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Statuses</SelectItem>
-              <SelectItem value="COMPLETED">Completed</SelectItem>
-              <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-              <SelectItem value="TODO">To Do</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -229,9 +208,8 @@ export const TimeLogFilters = ({
       {/* Active Filters Display */}
       {(filters.startDate ||
         filters.endDate ||
-        filters.projectId ||
-        filters.taskId ||
-        filters.status) && (
+        (filters.projectId && filters.projectId !== "all") ||
+        (filters.taskId && filters.taskId !== "all")) && (
         <div className="mt-4 pt-4 border-t">
           <p className="text-sm text-gray-600 mb-2">Active Filters:</p>
           <div className="flex flex-wrap gap-2">
@@ -245,24 +223,19 @@ export const TimeLogFilters = ({
                 To: {filters.endDate}
               </span>
             )}
-            {filters.projectId && (
+            {filters.projectId && filters.projectId !== "all" && (
               <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">
                 Project:{" "}
                 {projects.find((p) => p.id === filters.projectId)?.title}
               </span>
             )}
-            {filters.taskId && (
+            {filters.taskId && filters.taskId !== "all" && (
               <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
                 Task:{" "}
                 {
                   selectedProject?.tasks?.find((t) => t.id === filters.taskId)
                     ?.taskName
                 }
-              </span>
-            )}
-            {filters.status && (
-              <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs">
-                Status: {filters.status}
               </span>
             )}
           </div>

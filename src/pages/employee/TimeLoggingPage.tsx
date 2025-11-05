@@ -85,9 +85,8 @@ export const TimeLoggingPage = () => {
   const [appliedFilters, setAppliedFilters] = useState<FilterOptions>({
     startDate: "",
     endDate: "",
-    projectId: "",
-    taskId: "",
-    status: "",
+    projectId: "all",
+    taskId: "all",
   });
 
   useEffect(() => {
@@ -493,13 +492,13 @@ export const TimeLoggingPage = () => {
       );
     }
 
-    if (appliedFilters.projectId) {
+    if (appliedFilters.projectId && appliedFilters.projectId !== "all") {
       filtered = filtered.filter(
         (log) => log.projectId === appliedFilters.projectId
       );
     }
 
-    if (appliedFilters.taskId) {
+    if (appliedFilters.taskId && appliedFilters.taskId !== "all") {
       filtered = filtered.filter((log) => log.taskId === appliedFilters.taskId);
     }
 
@@ -566,17 +565,17 @@ export const TimeLoggingPage = () => {
                 />
               }
               timeLogsContent={
-                <>
+                <div className="space-y-4">
                   <TimeLogFilters
-                    projects={projects}
+                    projects={projects || []}
                     onFilterChange={handleFilterChange}
                   />
                   <TimeLogHistory
-                    timeLogs={filteredTimeLogs}
+                    timeLogs={filteredTimeLogs || []}
                     onEdit={handleEditTimeLog}
                     onDelete={handleDeleteTimeLog}
                   />
-                </>
+                </div>
               }
               weeklySummaryContent={<WeeklySummary data={weeklySummary} />}
             />
