@@ -13,6 +13,10 @@ import AdminSidebar from "./components/layout/AdminSidebar";
 // Public pages
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import OAuth2Callback from "./pages/OAuth2Callback";
 import NotFound from "./pages/NotFound";
 
 // Customer pages
@@ -39,6 +43,10 @@ const App = () => (
             {/* Public routes */}
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/oauth2/callback" element={<OAuth2Callback />} />
 
             {/* Test routes - Remove these in production */}
             <Route path="/test/book-appointment" element={<BookAppointment />} />
