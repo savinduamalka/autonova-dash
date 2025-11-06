@@ -29,6 +29,7 @@ import MyAppointments from "./pages/customer/my-appointments";
 
 // Employee pages
 import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
+import TimeLoggingPage from "./pages/employee/TimeLoggingPage";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -55,6 +56,19 @@ const App = () => {
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/oauth2/callback" element={<OAuth2Callback />} />
 
+            {/* Employee routes */}
+            <Route
+              path="/employee"
+              element={
+                <RequireAuth roles={['Employee']}>
+                  <DashboardLayout sidebar={<EmployeeSidebar />} />
+                </RequireAuth>
+              }
+            >
+              <Route index element={<Navigate to="/employee/dashboard" replace />} />
+              <Route path="dashboard" element={<EmployeeDashboard />} />
+              <Route path="time-logging" element={<TimeLoggingPage />} />
+            </Route>
                 {/* Test routes - Remove these in production */}
                 <Route path="/test/book-appointment" element={<BookAppointment />} />
                 <Route path="/test/appointments" element={<MyAppointments />} />
