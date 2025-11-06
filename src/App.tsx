@@ -23,6 +23,7 @@ import NotFound from './pages/NotFound';
 import CustomerDashboard from './pages/customer/CustomerDashboard';
 import BookAppointment from './pages/customer/book-appointment';
 import MyAppointments from './pages/customer/my-appointments';
+import VehiclesPage from './pages/customer/vehicles';
 import Profile from './pages/Profile';
 
 // Employee pages
@@ -103,6 +104,7 @@ const App = () => (
               <Route path="dashboard" element={<CustomerDashboard />} />
               <Route path="book-appointment" element={<BookAppointment />} />
               <Route path="appointments" element={<MyAppointments />} />
+              <Route path="vehicles" element={<VehiclesPage />} />
             </Route>
 
             {/* Employee routes */}
