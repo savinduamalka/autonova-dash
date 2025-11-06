@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,6 +13,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -104,6 +115,9 @@ const Profile = () => {
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -355,6 +369,25 @@ const Profile = () => {
   };
 
   const vehicles = profile?.customer?.vehicles ?? [];
+
+  const handleDeleteProfile = async () => {
+    setIsDeleting(true);
+    try {
+      await authService.deleteProfile();
+      toast.success('Your account has been deleted.');
+      setIsDeleteDialogOpen(false);
+      await logoutUser();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'We could not delete your profile. Please try again.';
+      toast.error(message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -663,6 +696,54 @@ const Profile = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-destructive/60 bg-destructive/5">
+        <CardHeader>
+          <CardTitle>Danger zone</CardTitle>
+          <CardDescription>
+            Permanently remove your profile and associated customer data.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            This action cannot be undone. You will lose access to your account
+            and need to register again to use Autonova.
+          </p>
+          <Dialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <Button variant="destructive" className="w-full sm:w-auto">
+                Delete profile
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete profile?</DialogTitle>
+                <DialogDescription>
+                  This will permanently remove your profile and linked vehicles.
+                  You will be signed out immediately.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline" disabled={isDeleting}>
+                    Cancel
+                  </Button>
+                </DialogClose>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteProfile}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardContent>
+      </Card>
     </div>
   );
 };
