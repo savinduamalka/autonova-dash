@@ -65,6 +65,40 @@ export interface EmployeeStats {
   totalHoursThisWeek: number;
 }
 
+// Time Logging Types
+export interface TimeLogStats {
+  totalHoursThisWeek: number;
+  totalHoursThisMonth: number;
+  totalHoursToday: number;
+  dailyHours: DailyHours[];
+  recentLogs: RecentTimeLog[];
+  averageHoursPerDay: number;
+  totalLogs: number;
+  mostProductiveDay: MostProductiveDay | null;
+}
+
+export interface DailyHours {
+  date: string; // ISO date (YYYY-MM-DD)
+  hours: number;
+  logCount: number;
+}
+
+export interface RecentTimeLog {
+  id: string;
+  projectId: string;
+  projectName: string;
+  taskId: string;
+  taskName: string;
+  hours: number;
+  note: string | null;
+  loggedAt: string; // ISO timestamp
+}
+
+export interface MostProductiveDay {
+  date: string;
+  hours: number;
+}
+
 export interface EmployeeWorkItem {
   id: string;
   type: 'service' | 'project';

@@ -21,7 +21,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { employeeApi } from '@/lib/api/employee';
-import { EmployeeStats, EmployeeWorkItem, TaskPriority } from '@/types/employee';
+import { EmployeeStats, EmployeeWorkItem, TaskPriority, TimeLogStats } from '@/types/employee';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -29,6 +29,7 @@ export default function EmployeeDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [stats, setStats] = useState<EmployeeStats | null>(null);
+  const [timeLogStats, setTimeLogStats] = useState<TimeLogStats | null>(null);
   const [workItems, setWorkItems] = useState<EmployeeWorkItem[]>([]);
   const [urgentTasks, setUrgentTasks] = useState<EmployeeWorkItem[]>([]);
   const [overdueTasks, setOverdueTasks] = useState<EmployeeWorkItem[]>([]);
@@ -38,14 +39,16 @@ export default function EmployeeDashboard() {
   const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true);
-      const [statsData, workItemsData, urgentData, overdueData] = await Promise.all([
+      const [statsData, timeLogsData, workItemsData, urgentData, overdueData] = await Promise.all([
         employeeApi.getStats(),
+        employeeApi.getTimeLogStats(),
         employeeApi.getAllWorkItems(),
         employeeApi.getUrgentTasks(),
         employeeApi.getOverdueTasks(),
       ]);
 
       setStats(statsData);
+      setTimeLogStats(timeLogsData);
       setWorkItems(workItemsData);
       setUrgentTasks(urgentData);
       setOverdueTasks(overdueData);
@@ -174,7 +177,7 @@ export default function EmployeeDashboard() {
     },
     { 
       label: 'Hours This Week', 
-      value: stats?.totalHoursThisWeek || 0, 
+      value: timeLogStats?.totalHoursThisWeek || 0, 
       icon: TrendingUp, 
       color: 'text-indigo-600',
       bgColor: 'bg-indigo-100 dark:bg-indigo-900/20',
@@ -303,7 +306,7 @@ export default function EmployeeDashboard() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
-                  {stats?.totalHoursThisWeek || 0} hrs this week
+                  {timeLogStats?.totalHoursThisWeek || 0} hrs this week
                 </span>
                 <ArrowRight className="h-4 w-4" />
               </div>

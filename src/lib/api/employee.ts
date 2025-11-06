@@ -1,10 +1,16 @@
 import { api } from './axios-config';
-import { ServiceTask, ModificationProject, EmployeeStats, EmployeeWorkItem } from '@/types/employee';
+import { ServiceTask, ModificationProject, EmployeeStats, EmployeeWorkItem, TimeLogStats } from '@/types/employee';
 
 export const employeeApi = {
   // Get employee dashboard statistics
   getStats: async (): Promise<EmployeeStats> => {
     const response = await api.get<EmployeeStats>('/employee/stats');
+    return response.data;
+  },
+
+  // Get time logging statistics
+  getTimeLogStats: async (): Promise<TimeLogStats> => {
+    const response = await api.get<TimeLogStats>('/employee/time-logs/stats');
     return response.data;
   },
 

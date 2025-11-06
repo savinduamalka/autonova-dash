@@ -15,10 +15,10 @@ import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+  { name: 'Employees', href: '/admin/employees', icon: UserCog },
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Appointments', href: '/admin/appointments', icon: Calendar },
   { name: 'Projects', href: '/admin/projects', icon: Wrench },
-  { name: 'Employees', href: '/admin/employees', icon: UserCog },
   { name: 'Billing', href: '/admin/billing', icon: CreditCard },
   { name: 'Time Logs', href: '/admin/time-logs', icon: Clock },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
