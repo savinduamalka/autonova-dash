@@ -11,7 +11,7 @@ import CustomerSidebar from "./components/layout/CustomerSidebar";
 import EmployeeSidebar from "./components/layout/EmployeeSidebar";
 import AdminSidebar from "./components/layout/AdminSidebar";
 import { ProjectsStoreProvider } from "./contexts/ProjectsStore";
-import { getEmployeeProjectRoutes } from "./pages/employee/projects";
+import { getAdminProjectRoutes } from "./pages/admin/projects";
 
 // Public pages
 import Landing from "./pages/Landing";
@@ -36,7 +36,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const employeeProjectRoutes = useMemo(() => getEmployeeProjectRoutes(), []);
+  const adminProjectRoutes = useMemo(() => getAdminProjectRoutes(), []);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -86,9 +86,6 @@ const App = () => {
                   <Route index element={<Navigate to="/employee/dashboard" replace />} />
                   <Route path="dashboard" element={<EmployeeDashboard />} />
                 </Route>
-                {employeeProjectRoutes.map((route) => (
-                  <Route key={route.path} path={route.path} element={route.element} />
-                ))}
 
                 {/* Admin routes */}
                 <Route
@@ -102,6 +99,9 @@ const App = () => {
                   <Route index element={<Navigate to="/admin/dashboard" replace />} />
                   <Route path="dashboard" element={<AdminDashboard />} />
                 </Route>
+                {adminProjectRoutes.map((route) => (
+                  <Route key={route.path} path={route.path} element={route.element} />
+                ))}
 
                 {/* 404 */}
                 <Route path="*" element={<NotFound />} />
@@ -110,7 +110,7 @@ const App = () => {
           </TooltipProvider>
         </ProjectsStoreProvider>
       </AuthProvider>
-  </QueryClientProvider>
+    </QueryClientProvider>
   );
 };
 
