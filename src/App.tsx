@@ -25,6 +25,7 @@ import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AppointmentManagement from "./pages/admin/appointment-management";
 
 const queryClient = new QueryClient();
 
@@ -83,6 +84,7 @@ const App = () => (
             >
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="appointments" element={<AppointmentManagement />} />
             </Route>
 
             {/* 404 */}

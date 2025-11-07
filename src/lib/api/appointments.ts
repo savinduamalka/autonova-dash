@@ -1,4 +1,4 @@
-import { AppointmentRequestDto, AppointmentResponseDto } from "@/types";
+import { AppointmentRequestDto, AppointmentResponseDto, AppointmentStatus, Vehicle } from "@/types";
 import { api } from "@/lib/api/axios-config";
 
 export const appointmentApi = {
@@ -22,10 +22,29 @@ export const appointmentApi = {
     });
   },
 
+  updateStatus: async (id: string, status: AppointmentStatus) => {
+    const response = await api.post<AppointmentResponseDto>(
+      `/appointments/${id}/status`,
+      { status }
+    );
+    return response.data;
+  },
+
   listByCustomer: async (customerId: string) => {
     const response = await api.get<AppointmentResponseDto[]>(
       `/appointments/customer/${customerId}`
     );
+    return response.data;
+  },
+
+  listAll: async (params?: {
+    status?: AppointmentStatus;
+    startDate?: string;
+    endDate?: string;
+  }) => {
+    const response = await api.get<AppointmentResponseDto[]>("/appointments", {
+      params,
+    });
     return response.data;
   },
 
@@ -35,4 +54,12 @@ export const appointmentApi = {
     });
     return response.data;
   },
-}
+};
+
+// Vehicle API for fetching customer vehicles
+export const vehicleApi = {
+  listByCustomer: async (customerId: string) => {
+    const response = await api.get<Vehicle[]>(`/vehicles/customer/${customerId}`);
+    return response.data;
+  },
+};
