@@ -1,10 +1,21 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const DEFAULT_API_BASE_URL = "http://localhost:8080";
 
-if (!API_BASE_URL) {
-  throw new Error(
-    'VITE_API_BASE_URL is not defined. Please set it in your environment.'
+const sanitizeBaseUrl = (value?: string | null) => {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  return trimmed.replace(/\/$/, "");
+};
+
+const resolvedBaseUrl = sanitizeBaseUrl(import.meta.env.VITE_API_BASE_URL) ?? DEFAULT_API_BASE_URL;
+
+if (!import.meta.env.VITE_API_BASE_URL && typeof console !== "undefined") {
+  console.warn(
+    `[api] Falling back to default API base URL (${DEFAULT_API_BASE_URL}). Set VITE_API_BASE_URL to silence this warning.`,
   );
 }
+
+const API_BASE_URL = resolvedBaseUrl;
 
 const AUTH_TOKEN_KEY = 'authToken';
 const AUTH_TOKEN_ISSUED_AT_KEY = 'authTokenIssuedAt';
