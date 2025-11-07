@@ -37,6 +37,7 @@ import TimeLoggingPage from "./pages/employee/TimeLoggingPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminEmployees from "./pages/admin/employees";
 import EmployeeDetail from "./pages/admin/employee-detail";
+import { TimeLoggingPage as AdminTimeLoggingPage } from "./pages/admin/TimeLoggingPage";
 
 const queryClient = new QueryClient();
 
@@ -108,6 +109,7 @@ const App = () => {
                   <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="employees" element={<AdminEmployees />} />
               <Route path="employees/:id" element={<EmployeeDetail />} />
+                  <Route path="time-logging" element={<AdminTimeLoggingPage />} />
                 </Route>
 
                 {/* 404 */}
