@@ -44,6 +44,7 @@ import EmployeeBilling from "./pages/employee/EmployeeBilling";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminEmployees from "./pages/admin/employees";
 import EmployeeDetail from "./pages/admin/employee-detail";
+import { TimeLoggingPage as AdminTimeLoggingPage } from "./pages/admin/TimeLoggingPage";
 import AdminBilling from "./pages/admin/AdminBilling";
 import { getAdminProjectRoutes } from "./pages/admin/projects";
 
@@ -170,6 +171,9 @@ const App = () => {
                 >
                   <Route index element={<Navigate to="/admin/dashboard" replace />} />
                   <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="employees" element={<AdminEmployees />} />
+              <Route path="employees/:id" element={<EmployeeDetail />} />
+                  <Route path="time-logging" element={<AdminTimeLoggingPage />} />
                   <Route path="employees" element={<AdminEmployees />} />
                   <Route path="employees/:id" element={<EmployeeDetail />} />
                   <Route path="billing" element={<AdminBilling />} />
