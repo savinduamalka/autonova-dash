@@ -3,29 +3,39 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { RequireAuth } from "./components/auth/RequireAuth";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import CustomerSidebar from "./components/layout/CustomerSidebar";
 import EmployeeSidebar from "./components/layout/EmployeeSidebar";
 import AdminSidebar from "./components/layout/AdminSidebar";
+import { ProjectsStoreProvider } from "./contexts/ProjectsStore";
 
 // Public pages
-import Landing from "./pages/Landing";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import OAuth2Callback from "./pages/OAuth2Callback";
-import NotFound from "./pages/NotFound";
+import Landing from './pages/Landing';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import OAuth2Callback from './pages/OAuth2Callback';
+import NotFound from './pages/NotFound';
 
 // Customer pages
 import CustomerDashboard from "./pages/customer/CustomerDashboard";
 import BookAppointment from "./pages/customer/book-appointment";
 import MyAppointments from "./pages/customer/my-appointments";
+import CustomerProjectProgress from "./pages/customer/ProjectProgress";
+import VehiclesPage from "./pages/customer/vehicles";
+import Profile from "./pages/Profile";
 
 // Employee pages
 import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
+import EmployeeServices from "./pages/employee/services";
+import EmployeeProjects from "./pages/employee/projects";
+import EmployeeTasks from "./pages/employee/tasks";
+import EmployeeReports from "./pages/employee/reports";
+import TimeLoggingPage from "./pages/employee/TimeLoggingPage";
+import EmployeeProjectProgress from "./pages/employee/ProjectProgress";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";

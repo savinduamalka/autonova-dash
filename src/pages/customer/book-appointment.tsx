@@ -48,16 +48,18 @@ const BUSINESS_HOURS = {
 const TIME_SLOTS = Array.from({ length: 16 }, (_, i) => {
   const hour = Math.floor(i / 2) + BUSINESS_HOURS.start;
   const minutes = (i % 2) * 30;
-  return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+  return `${hour.toString().padStart(2, '0')}:${minutes
+    .toString()
+    .padStart(2, '0')}`;
 });
 
 const formSchema = z.object({
-  vehicleId: z.string().min(1, "Please select a vehicle"),
-  serviceTypeId: z.string().min(1, "Please select a service type"),
+  vehicleId: z.string().min(1, 'Please select a vehicle'),
+  serviceTypeId: z.string().min(1, 'Please select a service type'),
   date: z.date({
-    required_error: "Please select a date",
+    required_error: 'Please select a date',
   }),
-  timeSlot: z.string().min(1, "Please select a time slot"),
+  timeSlot: z.string().min(1, 'Please select a time slot'),
   notes: z.string().optional(),
 });
 
@@ -76,7 +78,7 @@ const BookAppointment = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      const [hours, minutes] = values.timeSlot.split(":");
+      const [hours, minutes] = values.timeSlot.split(':');
       const startTime = setMinutes(
         setHours(values.date, parseInt(hours)),
         parseInt(minutes)
@@ -98,15 +100,15 @@ const BookAppointment = () => {
       });
 
       toast({
-        title: "Success",
-        description: "Appointment booked successfully!",
+        title: 'Success',
+        description: 'Appointment booked successfully!',
       });
       form.reset();
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to book appointment. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to book appointment. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -114,7 +116,7 @@ const BookAppointment = () => {
   };
 
   const checkAvailability = async (date: Date, timeSlot: string) => {
-    const [hours, minutes] = timeSlot.split(":");
+    const [hours, minutes] = timeSlot.split(':');
     const startTime = setMinutes(
       setHours(date, parseInt(hours)),
       parseInt(minutes)
@@ -125,10 +127,9 @@ const BookAppointment = () => {
     ).toISOString();
 
     try {
-      const isAvailable = await appointmentApi.checkAvailability(startTime, endTime);
-      return isAvailable;
+      return await appointmentApi.checkAvailability(startTime, endTime);
     } catch (error) {
-      console.error("Failed to check availability:", error);
+      console.error('Failed to check availability:', error);
       return false;
     }
   };
@@ -250,10 +251,7 @@ const BookAppointment = () => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Time</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   {availableSlots.map((slot) => (
                     <option key={slot} value={slot}>
                       {slot}
