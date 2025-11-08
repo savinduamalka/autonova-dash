@@ -39,6 +39,7 @@ import TimeLoggingPage from "./pages/employee/TimeLoggingPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminEmployees from "./pages/admin/employees";
 import EmployeeDetail from "./pages/admin/employee-detail";
+import Notifications from "./pages/Notifications";
 
 const ProfileRoute = () => {
   const { user } = useAuth();
@@ -57,6 +58,27 @@ const ProfileRoute = () => {
   return (
     <DashboardLayout sidebar={sidebar}>
       <Profile />
+    </DashboardLayout>
+  );
+};
+
+const NotificationsRoute = () => {
+  const { user } = useAuth();
+  const role = user?.role?.toUpperCase();
+
+  let sidebar: React.ReactNode | null = null;
+
+  if (role === "ADMIN") {
+    sidebar = <AdminSidebar />;
+  } else if (role === "EMPLOYEE") {
+    sidebar = <EmployeeSidebar />;
+  } else {
+    sidebar = <CustomerSidebar />;
+  }
+
+  return (
+    <DashboardLayout sidebar={sidebar}>
+      <Notifications />
     </DashboardLayout>
   );
 };
@@ -86,6 +108,15 @@ const App = () => {
                   element={
                     <RequireAuth>
                       <ProfileRoute />
+                    </RequireAuth>
+                  }
+                />
+
+                <Route
+                  path="/notifications"
+                  element={
+                    <RequireAuth>
+                      <NotificationsRoute />
                     </RequireAuth>
                   }
                 />
@@ -141,6 +172,7 @@ const App = () => {
                   <Route path="dashboard" element={<AdminDashboard />} />
                   <Route path="employees" element={<AdminEmployees />} />
                   <Route path="employees/:id" element={<EmployeeDetail />} />
+                  <Route path="notifications" element={<Notifications />} />
                 </Route>
 
                 {/* 404 */}
