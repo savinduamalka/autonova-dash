@@ -10,6 +10,7 @@ import CustomerSidebar from "./components/layout/CustomerSidebar";
 import EmployeeSidebar from "./components/layout/EmployeeSidebar";
 import AdminSidebar from "./components/layout/AdminSidebar";
 import { ProjectsStoreProvider } from "./contexts/ProjectsStore";
+import Help from "./pages/Help";
 
 // Public pages
 import Landing from './pages/Landing';
@@ -24,7 +25,9 @@ import NotFound from './pages/NotFound';
 import CustomerDashboard from "./pages/customer/CustomerDashboard";
 import BookAppointment from "./pages/customer/book-appointment";
 import MyAppointments from "./pages/customer/my-appointments";
+import CustomerProjectProgress from "./pages/customer/ProjectProgress";
 import VehiclesPage from "./pages/customer/vehicles";
+import CustomerBilling from "./pages/customer/CustomerBilling";
 import Profile from "./pages/Profile";
 
 // Employee pages
@@ -34,30 +37,43 @@ import EmployeeProjects from "./pages/employee/projects";
 import EmployeeTasks from "./pages/employee/tasks";
 import EmployeeReports from "./pages/employee/reports";
 import TimeLoggingPage from "./pages/employee/TimeLoggingPage";
+import EmployeeProjectProgress from "./pages/employee/ProjectProgress";
+import EmployeeBilling from "./pages/employee/EmployeeBilling";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminEmployees from "./pages/admin/employees";
 import EmployeeDetail from "./pages/admin/employee-detail";
 import Notifications from "./pages/Notifications";
+import { TimeLoggingPage as AdminTimeLoggingPage } from "./pages/admin/TimeLoggingPage";
+import AdminBilling from "./pages/admin/AdminBilling";
+import { getAdminProjectRoutes } from "./pages/admin/projects";
+
+const getSidebarForRole = (role?: string | null) => {
+  const normalized = role?.toUpperCase();
+  if (normalized === "ADMIN") return <AdminSidebar />;
+  if (normalized === "EMPLOYEE") return <EmployeeSidebar />;
+  return <CustomerSidebar />;
+};
 
 const ProfileRoute = () => {
   const { user } = useAuth();
-  const role = user?.role?.toUpperCase();
-
-  let sidebar: React.ReactNode | null = null;
-
-  if (role === "ADMIN") {
-    sidebar = <AdminSidebar />;
-  } else if (role === "EMPLOYEE") {
-    sidebar = <EmployeeSidebar />;
-  } else {
-    sidebar = <CustomerSidebar />;
-  }
+  const sidebar = getSidebarForRole(user?.role);
 
   return (
     <DashboardLayout sidebar={sidebar}>
       <Profile />
+    </DashboardLayout>
+  );
+};
+
+const HelpRoute = () => {
+  const { user } = useAuth();
+  const sidebar = getSidebarForRole(user?.role);
+
+  return (
+    <DashboardLayout sidebar={sidebar}>
+      <Help />
     </DashboardLayout>
   );
 };
@@ -86,6 +102,8 @@ const NotificationsRoute = () => {
 const queryClient = new QueryClient();
 
 const App = () => {
+  const adminProjectRoutes = getAdminProjectRoutes();
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -111,6 +129,14 @@ const App = () => {
                     </RequireAuth>
                   }
                 />
+                <Route
+                  path="/help"
+                  element={
+                    <RequireAuth>
+                      <HelpRoute />
+                    </RequireAuth>
+                  }
+                />
 
                 <Route
                   path="/notifications"
@@ -124,6 +150,8 @@ const App = () => {
                 {/* Test routes - Remove these in production */}
                 <Route path="/test/book-appointment" element={<BookAppointment />} />
                 <Route path="/test/appointments" element={<MyAppointments />} />
+                <Route path="/test/progress/:projectId" element={<CustomerProjectProgress />} />
+                <Route path="/test/employee/progress/:projectId" element={<EmployeeProjectProgress />} />
 
                 {/* Customer routes */}
                 <Route
@@ -138,6 +166,8 @@ const App = () => {
                   <Route path="dashboard" element={<CustomerDashboard />} />
                   <Route path="book-appointment" element={<BookAppointment />} />
                   <Route path="appointments" element={<MyAppointments />} />
+                  <Route path="billing" element={<CustomerBilling />} />
+                  <Route path="progress/:projectId" element={<CustomerProjectProgress />} />
                   <Route path="vehicles" element={<VehiclesPage />} />
                 </Route>
 
@@ -156,7 +186,9 @@ const App = () => {
                   <Route path="tasks" element={<EmployeeTasks />} />
                   <Route path="services" element={<EmployeeServices />} />
                   <Route path="projects" element={<EmployeeProjects />} />
+                  <Route path="projects/:projectId/progress" element={<EmployeeProjectProgress />} />
                   <Route path="reports" element={<EmployeeReports />} />
+                  <Route path="billing" element={<EmployeeBilling />} />
                 </Route>
 
                 {/* Admin routes */}
@@ -170,10 +202,17 @@ const App = () => {
                 >
                   <Route index element={<Navigate to="/admin/dashboard" replace />} />
                   <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="employees" element={<AdminEmployees />} />
+              <Route path="employees/:id" element={<EmployeeDetail />} />
+                  <Route path="time-logging" element={<AdminTimeLoggingPage />} />
                   <Route path="employees" element={<AdminEmployees />} />
                   <Route path="employees/:id" element={<EmployeeDetail />} />
                   <Route path="notifications" element={<Notifications />} />
+                  <Route path="billing" element={<AdminBilling />} />
                 </Route>
+                {adminProjectRoutes.map((route) => (
+                  <Route key={route.path} path={route.path} element={route.element} />
+                ))}
 
                 {/* 404 */}
                 <Route path="*" element={<NotFound />} />
