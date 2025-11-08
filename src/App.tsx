@@ -23,8 +23,8 @@ import NotFound from './pages/NotFound';
 
 // Customer pages
 import CustomerDashboard from "./pages/customer/CustomerDashboard";
-import BookAppointment from "./pages/customer/book-appointment";
-import MyAppointments from "./pages/customer/my-appointments";
+import BookAppointment from "./pages/customer/BookAppointment";
+import MyAppointments from "./pages/customer/MyAppointments";
 import CustomerProjectProgress from "./pages/customer/ProjectProgress";
 import VehiclesPage from "./pages/customer/vehicles";
 import CustomerBilling from "./pages/customer/CustomerBilling";
