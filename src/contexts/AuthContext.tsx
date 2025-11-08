@@ -1,12 +1,13 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import * as authService from '@/services/authService';
-
-interface User {
-  id: number;
-  email: string;
-  userName: string;
-  role: string;
-}
+import type { AuthUser } from '@/types';
+import type { MessageResponse } from '@/services/authService';
 
 interface LoginCredentials {
   email: string;
@@ -22,18 +23,21 @@ interface SignupData {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   loading: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
-  signup: (data: SignupData) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<AuthUser>;
+  signup: (data: SignupData) => Promise<MessageResponse>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
+  updateUser: (updates: Partial<AuthUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(() =>
+    authService.getStoredUser()
+  );
   const [loading, setLoading] = useState(true);
 
   // Auto-refresh token before expiration (every 50 minutes if token expires in 1 hour)
@@ -62,51 +66,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Check if user is already authenticated
     const initAuth = async () => {
       const token = localStorage.getItem('accessToken');
-      const refreshToken = localStorage.getItem('refreshToken');
-      const storedUserInfo = localStorage.getItem('userInfo');
-
-      // If we have both tokens and stored user info, restore session
-      if (token && refreshToken && storedUserInfo) {
+      if (token) {
         try {
-          // First try to use stored user info to avoid unnecessary API call
-          const storedUser = JSON.parse(storedUserInfo);
-          setUser(storedUser);
-
-          // Then verify token in background and refresh if needed
-          try {
-            const currentUser = await authService.getUserInfo();
-            // Update with fresh data if different
-            if (JSON.stringify(currentUser) !== JSON.stringify(storedUser)) {
-              setUser(currentUser);
-              localStorage.setItem('userInfo', JSON.stringify(currentUser));
-            }
-          } catch (verifyError: any) {
-            // If verification fails, try refresh token
-            if (verifyError.message !== 'Session expired') {
-              try {
-                await authService.refreshAccessToken();
-                const currentUser = await authService.getUserInfo();
-                setUser(currentUser);
-                localStorage.setItem('userInfo', JSON.stringify(currentUser));
-              } catch (refreshError) {
-                console.error('Token refresh failed:', refreshError);
-                // Only clear on refresh failure (refresh token expired)
-                if (refreshError instanceof Error && refreshError.message === 'Session expired') {
-                  localStorage.clear();
-                  setUser(null);
-                }
-              }
-            } else {
-              // Session expired message means refresh already failed
-              localStorage.clear();
-              setUser(null);
-            }
-          }
+          const currentUser = await authService.getUserInfo();
+          setUser(currentUser);
         } catch (error) {
-          console.error('Failed to restore session:', error);
-          // Only clear if JSON parsing fails (corrupted data)
+          console.error('Failed to get current user:', error);
+          // Clear invalid tokens
           localStorage.clear();
-          setUser(null);
         }
       }
       setLoading(false);
@@ -116,26 +83,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = async (credentials: LoginCredentials) => {
-    const response = await authService.login(credentials.email, credentials.password);
-    setUser(response.userInfo);
+    const loggedInUser = await authService.login(
+      credentials.email,
+      credentials.password
+    );
+    setUser(loggedInUser);
+    return loggedInUser;
   };
 
   const signup = async (data: SignupData) => {
-    // Register the user
-    await authService.register({
+    return authService.register({
       userName: data.userName,
       email: data.email,
       password: data.password,
       contactOne: data.contactNumber,
-      role: data.role
+      role: data.role,
     });
-    // Note: After registration, user needs to login separately
-    // The backend doesn't auto-login after registration
   };
 
   const logout = async () => {
-    await authService.logout();
+    authService.logout();
     setUser(null);
+  };
+
+  const updateUser = (updates: Partial<AuthUser>) => {
+    setUser((prev) => {
+      if (!prev) {
+        return prev;
+      }
+
+      const filteredUpdates = Object.fromEntries(
+        Object.entries(updates).filter(([, value]) => value !== undefined)
+      ) as Partial<AuthUser>;
+
+      if (Object.keys(filteredUpdates).length === 0) {
+        return prev;
+      }
+
+      const nextUser = { ...prev, ...filteredUpdates };
+      authService.storeUser(nextUser);
+      return nextUser;
+    });
   };
 
   return (
@@ -147,6 +135,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signup,
         logout,
         isAuthenticated: !!user,
+        updateUser,
       }}
     >
       {children}
