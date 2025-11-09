@@ -61,7 +61,7 @@ export interface UserStats {
 
 // Helper to get auth header
 const getAuthHeaders = (): HeadersInit => {
-  const token = localStorage.getItem('accessToken');
+  const token = localStorage.getItem('authToken');
   return {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` }),

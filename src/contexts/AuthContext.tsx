@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Check if user is already authenticated
     const initAuth = async () => {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('authToken');
       if (token) {
         try {
           const currentUser = await authService.getUserInfo();

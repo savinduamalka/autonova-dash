@@ -38,9 +38,6 @@ const signupSchema = z
       .string()
       .min(10, 'Contact number must be at least 10 digits')
       .regex(/^[0-9+\-\s()]+$/, 'Invalid phone number format'),
-    role: z.enum(['Customer', 'Employee', 'Admin'], {
-      required_error: 'Please select a role',
-    }),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z
       .string()
@@ -85,7 +82,6 @@ export default function Signup() {
       'userName',
       'email',
       'contactNumber',
-      'role',
     ]);
     if (result) {
       setCurrentStep(2);
