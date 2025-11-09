@@ -47,6 +47,7 @@ import EmployeeDetail from "./pages/admin/employee-detail";
 import { TimeLoggingPage as AdminTimeLoggingPage } from "./pages/admin/TimeLoggingPage";
 import AdminBilling from "./pages/admin/AdminBilling";
 import { getAdminProjectRoutes } from "./pages/admin/projects";
+import ManageAppointments from "./pages/admin/ManageAppointments";
 
 const getSidebarForRole = (role?: string | null) => {
   const normalized = role?.toUpperCase();
@@ -177,6 +178,8 @@ const App = () => {
                   <Route path="employees" element={<AdminEmployees />} />
                   <Route path="employees/:id" element={<EmployeeDetail />} />
                   <Route path="billing" element={<AdminBilling />} />
+                  {/* <Route path="billing" element={<AdminBilling />} /> */}
+                  <Route path="appointments" element={<ManageAppointments />} />
                 </Route>
                 {adminProjectRoutes.map((route) => (
                   <Route key={route.path} path={route.path} element={route.element} />
