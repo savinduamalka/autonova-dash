@@ -48,6 +48,7 @@ import Notifications from "./pages/Notifications";
 import { TimeLoggingPage as AdminTimeLoggingPage } from "./pages/admin/TimeLoggingPage";
 import AdminBilling from "./pages/admin/AdminBilling";
 import { getAdminProjectRoutes } from "./pages/admin/projects";
+import ManageAppointments from "./pages/admin/ManageAppointments";
 
 const getSidebarForRole = (role?: string | null) => {
   const normalized = role?.toUpperCase();
@@ -208,6 +209,8 @@ const App = () => {
                   <Route path="time-logging" element={<AdminTimeLoggingPage />} />
                   <Route path="notifications" element={<Notifications />} />
                   <Route path="billing" element={<AdminBilling />} />
+                  {/* <Route path="billing" element={<AdminBilling />} /> */}
+                  <Route path="appointments" element={<ManageAppointments />} />
                   <Route path="users" element={<UserManagement />} />
                 </Route>
                 {adminProjectRoutes.map((route) => (
