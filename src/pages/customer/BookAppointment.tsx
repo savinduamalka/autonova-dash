@@ -82,7 +82,9 @@ export default function BookAppointment() {
 
     const payload = {
   customerId: customerUuid, // or just customerId if backend accepts number
+  customerUsername: user.userName,
   vehicleId: "11111111-1111-1111-1111-111111111111",
+  vehicleName: vehicles.find(v => v.id === formData.vehicleId)?.name || "Unknown",
   serviceType: formData.serviceType,
   startTime: start.toISOString(),
   endTime: end.toISOString(),
