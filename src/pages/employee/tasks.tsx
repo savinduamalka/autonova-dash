@@ -42,11 +42,30 @@ export default function MyTasks() {
 
   const loadTasks = useCallback(async () => {
     try {
+      console.log('[DEBUG] Starting to load tasks...');
       setLoading(true);
       const data = await employeeApi.getAllWorkItems();
+      console.log('[DEBUG] Tasks loaded successfully:', data);
+      console.log('[DEBUG] Tasks by status:', {
+        pending: data.filter(t => t.status === 'pending').length,
+        in_progress: data.filter(t => t.status === 'in_progress').length,
+        completed: data.filter(t => t.status === 'completed').length,
+        overdue: data.filter(t => t.status === 'overdue').length,
+      });
+      console.log('[DEBUG] Tasks by priority:', {
+        urgent: data.filter(t => t.priority === 'urgent').length,
+        high: data.filter(t => t.priority === 'high').length,
+        normal: data.filter(t => t.priority === 'normal').length,
+        low: data.filter(t => t.priority === 'low').length,
+      });
       setTasks(data);
     } catch (error) {
+      console.error('[DEBUG] Error loading tasks:', error);
       const err = error as { response?: { data?: { message?: string } } };
+      console.error('[DEBUG] Error details:', {
+        message: err.response?.data?.message,
+        response: err.response,
+      });
       toast({
         title: 'Error',
         description: err.response?.data?.message || 'Failed to load tasks',
@@ -54,6 +73,7 @@ export default function MyTasks() {
       });
     } finally {
       setLoading(false);
+      console.log('[DEBUG] Loading complete');
     }
   }, [toast]);
 
@@ -62,20 +82,25 @@ export default function MyTasks() {
   }, [loadTasks]);
 
   const filterTasks = () => {
+    console.log('[DEBUG] Filtering tasks with filters:', { statusFilter, priorityFilter, typeFilter });
     let filtered = tasks;
 
     if (statusFilter !== 'all') {
       filtered = filtered.filter((t) => t.status === statusFilter);
+      console.log('[DEBUG] After status filter:', filtered.length);
     }
 
     if (priorityFilter !== 'all') {
       filtered = filtered.filter((t) => t.priority === priorityFilter);
+      console.log('[DEBUG] After priority filter:', filtered.length);
     }
 
     if (typeFilter !== 'all') {
       filtered = filtered.filter((t) => t.type === typeFilter);
+      console.log('[DEBUG] After type filter:', filtered.length);
     }
 
+    console.log('[DEBUG] Final filtered tasks count:', filtered.length);
     return filtered;
   };
 
