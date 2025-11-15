@@ -103,9 +103,14 @@ export default function ProjectsListPage() {
         className: "text-right",
         headerClassName: "text-right",
         cell: (project) => (
-          <Button size="sm" variant="outline" onClick={() => navigate(`/admin/projects/${project.id}`)}>
-            View
-          </Button>
+          <div className="flex gap-2 justify-end">
+            <Button size="sm" variant="outline" onClick={() => navigate(`/admin/projects/${project.id}`)}>
+              View
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => navigate(`/admin/projects/${project.id}/progress`)}>
+              Progress
+            </Button>
+          </div>
         ),
       },
     ],

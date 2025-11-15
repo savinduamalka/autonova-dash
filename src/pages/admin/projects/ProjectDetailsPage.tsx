@@ -276,10 +276,13 @@ export default function ProjectDetailsPage() {
             <Button variant="outline" onClick={() => navigate("/admin/projects")}>
               Back
             </Button>
+            <Button variant="ghost" onClick={() => navigate(`/admin/projects/${id}/progress`)}>
+              View progress
+            </Button>
             <Button variant="outline" onClick={() => setEditOpen(true)}>
               Edit details
             </Button>
-            <Can roles={["Admin"]}>
+            <Can roles={["ADMIN"]}>
               {project.status === "approved" && (
                 <Button onClick={() => handleStatusAction("start")} disabled={actionLoading !== null}>
                   {actionLoading === "start" ? "Starting..." : "Start project"}

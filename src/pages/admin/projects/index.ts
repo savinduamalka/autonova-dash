@@ -6,6 +6,7 @@ import { RequireAuth } from "@/components/auth/RequireAuth";
 import ProjectsListPage from "./ProjectsListPage";
 import ProjectCreatePage from "./ProjectCreatePage";
 import ProjectDetailsPage from "./ProjectDetailsPage";
+import ProjectProgressPage from './ProjectProgressPage';
 
 const withAdminAuth = (Component: ComponentType): RouteObject["element"] =>
   createElement(RequireAuth, {
@@ -25,5 +26,9 @@ export const getAdminProjectRoutes = (): RouteObject[] => [
   {
     path: "/admin/projects/:id",
     element: withAdminAuth(ProjectDetailsPage),
+  },
+  {
+    path: "/admin/projects/:id/progress",
+    element: withAdminAuth(ProjectProgressPage),
   },
 ];
