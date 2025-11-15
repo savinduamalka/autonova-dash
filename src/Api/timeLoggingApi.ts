@@ -29,9 +29,11 @@ const mapToTimeLog = (response: TimeLogResponse): TimeLog => ({
 });
 
 // Get employee ID from auth context or localStorage
-const getEmployeeId = (): string => {
+const getEmployeeId = (): number => {
   // Will replace this with actual auth logic when Auth Service is integrated
-  return localStorage.getItem("employeeId") || "emp-001";
+  const storedId = localStorage.getItem("employeeId");
+  // Parse as number since backend expects Long/BIGINT
+  return storedId ? parseInt(storedId, 10) : 1; // Default to user ID 1
 };
 
 export const timeLoggingApi = {
