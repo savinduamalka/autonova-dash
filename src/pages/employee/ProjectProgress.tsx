@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ProjectProgressBar } from '@/components/projects/ProjectProgressBar';
 import { ProgressTimeline } from '@/components/projects/ProgressTimeline';
-import { progressService, ProjectProgress, ProgressMessage } from '@/services/progressService';
+import { progressService, ProjectProgress, ConnectionStatus, ProgressMessage } from '@/services/progressService';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -62,10 +62,12 @@ export default function EmployeeProjectProgressPage() {
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const { toast } = useToast();
+  const [connection, setConnection] = useState<ConnectionStatus>('disconnected');
 
   useEffect(() => {
     if (!projectId) return;
     let unsub: (() => void) | undefined;
+    let unsubStatus: (() => void) | undefined;
 
     const load = async () => {
       setLoading(true);
@@ -90,10 +92,15 @@ export default function EmployeeProjectProgressPage() {
         setProgress(data);
         setStatus(data.status);
       });
+      // subscribe to connection status
+      unsubStatus = progressService.subscribeToConnectionStatus(projectId, (s) => setConnection(s));
     };
     load();
 
-    return () => unsub?.();
+    return () => {
+      unsubStatus?.();
+      unsub?.();
+    };
   }, [projectId]);
 
   if (!projectId) return <div>Project id missing</div>;
@@ -156,10 +163,16 @@ export default function EmployeeProjectProgressPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>{project?.title ?? (project as any)?.name ?? 'Project details'}</CardTitle>
-              <Badge className="uppercase">{project?.status ?? progress?.status ?? 'unknown'}</Badge>
+              <div className="flex items-center gap-3">
+                <CardTitle>{project?.title ?? (project as any)?.name ?? 'Project details'}</CardTitle>
+                <Badge className="uppercase">{project?.status ?? progress?.status ?? 'unknown'}</Badge>
+                <Badge variant={connection === 'connected' ? undefined : 'secondary'} className="ml-2">
+                  {connection === 'connected' ? 'Live updates on' : connection === 'connecting' ? 'Connecting...' : connection === 'error' ? 'Live update error' : 'Live updates off'}
+                </Badge>
+              </div>
             </div>
             {project?.description && <CardDescription>{project.description}</CardDescription>}
+
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
