@@ -19,6 +19,7 @@ import {
   getAdminProject,
   approveProject,
   createAdminTask,
+  updateAdminAppointmentStatus,
 } from "@/services/projectService";
 import type { ProjectDetails, ProjectTask, ProjectStatus } from "@/types/project";
 
@@ -99,6 +100,13 @@ export default function ProjectDetailsPage() {
           scheduledEnd: approveState.assignments[task.taskId]?.scheduledEnd,
         })),
       });
+      if (project.appointmentId) {
+        try {
+          await updateAdminAppointmentStatus(project.appointmentId, "IN_PROGRESS", `Project ${project.projectId} approved`);
+        } catch (err) {
+          console.warn("Failed to update appointment status", err);
+        }
+      }
       const updated = await getAdminProject(project.projectId);
       setProject(updated);
       setApproveOpen(false);
