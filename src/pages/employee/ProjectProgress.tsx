@@ -24,6 +24,7 @@ import {
   uploadAndCreateMessage,
   subscribeToProjectUpdates,
 } from "@/services/progressMonitoringService";
+import { apiConfig } from "@/lib/api/client";
 import type { ProjectDetails, TaskStatus } from "@/types/project";
 import type { ProjectMessage, EventCategory } from "@/types/progressMonitoring";
 import {
@@ -54,6 +55,11 @@ const formatRelativeTime = (date: string) => {
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   return `${diffDays}d ago`;
+};
+
+const isImageFile = (contentType?: string) => {
+  if (!contentType) return false;
+  return contentType.startsWith("image/");
 };
 
 const getCategoryIcon = (category: string) => {
@@ -437,16 +443,45 @@ export default function EmployeeProjectProgressPage() {
                             </details>
                           )}
                           {msg.attachmentUrl && (
-                            <div className="flex items-center gap-2 rounded-md border p-2">
-                              <FileText className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm flex-1">{msg.attachmentFilename}</span>
-                              <a
-                                href={msg.attachmentUrl}
-                                download
-                                className="text-primary hover:underline"
-                              >
-                                <Download className="h-4 w-4" />
-                              </a>
+                            <div className="mt-3 space-y-2">
+                              {isImageFile(msg.attachmentContentType) ? (
+                                <div className="space-y-2">
+                                  <img
+                                    src={`${apiConfig.API_BASE_URL}${msg.attachmentUrl}`}
+                                    alt={msg.attachmentFilename || "Attachment"}
+                                    className="max-w-full h-auto rounded-lg border"
+                                    style={{ maxHeight: "400px" }}
+                                  />
+                                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                    <span>{msg.attachmentFilename}</span>
+                                    <a
+                                      href={`${apiConfig.API_BASE_URL}${msg.attachmentUrl}`}
+                                      download={msg.attachmentFilename}
+                                      className="flex items-center gap-1 text-primary hover:underline"
+                                    >
+                                      <Download className="h-3 w-3" />
+                                      Download
+                                    </a>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 rounded-md border p-3 bg-muted/50">
+                                  <FileText className="h-5 w-5 text-muted-foreground" />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate">{msg.attachmentFilename}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {msg.attachmentSize ? `${(msg.attachmentSize / 1024).toFixed(1)} KB` : ""}
+                                    </p>
+                                  </div>
+                                  <a
+                                    href={`${apiConfig.API_BASE_URL}${msg.attachmentUrl}`}
+                                    download={msg.attachmentFilename}
+                                    className="text-primary hover:underline flex items-center gap-1"
+                                  >
+                                    <Download className="h-4 w-4" />
+                                  </a>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
