@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import EmployeeSidebar from "@/components/layout/EmployeeSidebar";
 import {
   Select,
   SelectContent,
@@ -112,7 +115,7 @@ export default function EmployeeProjectProgressPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLiveConnected, setIsLiveConnected] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesTopRef = useRef<HTMLDivElement>(null);
 
   // Form state
   const [newMessage, setNewMessage] = useState("");
@@ -121,8 +124,8 @@ export default function EmployeeProjectProgressPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToTop = () => {
+    messagesTopRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -144,9 +147,6 @@ export default function EmployeeProjectProgressPage() {
 
         setProject(projectData);
         setMessages(messagesData);
-
-        // Scroll to bottom after messages load
-        setTimeout(scrollToBottom, 100);
       } catch (err) {
         if (!active) return;
         setError(err instanceof Error ? err.message : "Unable to load project");
@@ -165,7 +165,7 @@ export default function EmployeeProjectProgressPage() {
           projectId,
           (newMessage) => {
             setMessages((prev) => [newMessage, ...prev]);
-            setTimeout(scrollToBottom, 100);
+            setTimeout(scrollToTop, 100);
           },
           () => {
             setIsLiveConnected(false);
@@ -230,7 +230,7 @@ export default function EmployeeProjectProgressPage() {
         fileInputRef.current.value = "";
       }
       
-      setTimeout(scrollToBottom, 100);
+      setTimeout(scrollToTop, 100);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Unable to post message");
     } finally {
@@ -245,32 +245,51 @@ export default function EmployeeProjectProgressPage() {
   };
 
   if (!projectId) {
-    return <p className="p-4">Missing project ID.</p>;
+    return (
+      <DashboardLayout sidebar={<EmployeeSidebar />}>
+        <p className="p-4">Missing project ID.</p>
+      </DashboardLayout>
+    );
   }
 
   if (loading) {
     return (
-      <div className="flex h-96 items-center justify-center">
-        <div className="text-center">
-          <RefreshCw className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="mt-2 text-muted-foreground">Loading project…</p>
+      <DashboardLayout sidebar={<EmployeeSidebar />}>
+        <div className="mx-auto max-w-7xl space-y-6 p-4">
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="space-y-6 lg:col-span-1">
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-96 w-full" />
+            </div>
+            <div className="lg:col-span-2 space-y-4">
+              <Skeleton className="h-64 w-full" />
+              <Skeleton className="h-96 w-full" />
+            </div>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (error || !project) {
     return (
-      <div className="p-4">
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
-          <p className="text-destructive">{error ?? "Project not found."}</p>
+      <DashboardLayout sidebar={<EmployeeSidebar />}>
+        <div className="p-4">
+          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+            <p className="text-destructive">{error ?? "Project not found."}</p>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-4">
+    <DashboardLayout sidebar={<EmployeeSidebar />}>
+      <div className="mx-auto max-w-7xl space-y-6 p-4">
       {/* Header */}
       <div className="flex flex-col gap-4">
         <Link
@@ -360,6 +379,85 @@ export default function EmployeeProjectProgressPage() {
 
         {/* Right Column - Progress Updates & Post Message */}
         <div className="lg:col-span-2 space-y-4">
+          {/* Progress Update Messages */}
+          <Card className="h-[calc(100vh-28rem)]">
+            <CardHeader className="border-b">
+              <div className="flex items-center justify-between">
+                <CardTitle>Progress Update Messages</CardTitle>
+                <Badge variant="secondary">{messages.length} updates</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="h-[calc(100%-5rem)] overflow-y-auto p-4">
+              <div ref={messagesTopRef} />
+              {messages.length === 0 ? (
+                <div className="flex h-full items-center justify-center">
+                  <div className="text-center">
+                    <Clock className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                    <p className="mt-4 text-sm text-muted-foreground">
+                      No updates yet. Be the first to post a progress update!
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {messages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className="rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`mt-0.5 rounded-full p-2 ${getCategoryColor(msg.category)}`}
+                        >
+                          {getCategoryIcon(msg.category)}
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge variant="outline" className="text-xs">
+                                {msg.category}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {formatDate(msg.occurredAt)}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                ({formatRelativeTime(msg.occurredAt)})
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-sm leading-relaxed">{msg.message}</p>
+                          {msg.payload && (
+                            <details className="text-xs">
+                              <summary className="cursor-pointer text-muted-foreground">
+                                View details
+                              </summary>
+                              <pre className="mt-2 rounded bg-muted p-2 overflow-x-auto">
+                                {JSON.stringify(JSON.parse(msg.payload), null, 2)}
+                              </pre>
+                            </details>
+                          )}
+                          {msg.attachmentUrl && (
+                            <div className="flex items-center gap-2 rounded-md border p-2">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm flex-1">{msg.attachmentFilename}</span>
+                              <a
+                                href={msg.attachmentUrl}
+                                download
+                                className="text-primary hover:underline"
+                              >
+                                <Download className="h-4 w-4" />
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Post Update Form */}
           <Card>
             <CardHeader>
@@ -447,87 +545,9 @@ export default function EmployeeProjectProgressPage() {
               </Button>
             </CardContent>
           </Card>
-
-          {/* Progress Updates Timeline */}
-          <Card className="h-[calc(100vh-28rem)]">
-            <CardHeader className="border-b">
-              <div className="flex items-center justify-between">
-                <CardTitle>Progress Timeline</CardTitle>
-                <Badge variant="secondary">{messages.length} updates</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="h-[calc(100%-5rem)] overflow-y-auto p-4">
-              {messages.length === 0 ? (
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-center">
-                    <Clock className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                    <p className="mt-4 text-sm text-muted-foreground">
-                      No updates yet. Be the first to post a progress update!
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className="rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={`mt-0.5 rounded-full p-2 ${getCategoryColor(msg.category)}`}
-                        >
-                          {getCategoryIcon(msg.category)}
-                        </div>
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <Badge variant="outline" className="text-xs">
-                                {msg.category}
-                              </Badge>
-                              <span className="text-xs text-muted-foreground">
-                                {formatDate(msg.occurredAt)}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                ({formatRelativeTime(msg.occurredAt)})
-                              </span>
-                            </div>
-                          </div>
-                          <p className="text-sm leading-relaxed">{msg.message}</p>
-                          {msg.payload && (
-                            <details className="text-xs">
-                              <summary className="cursor-pointer text-muted-foreground">
-                                View details
-                              </summary>
-                              <pre className="mt-2 rounded bg-muted p-2 overflow-x-auto">
-                                {JSON.stringify(JSON.parse(msg.payload), null, 2)}
-                              </pre>
-                            </details>
-                          )}
-                          {msg.attachmentUrl && (
-                            <div className="flex items-center gap-2 rounded-md border p-2">
-                              <FileText className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm flex-1">{msg.attachmentFilename}</span>
-                              <a
-                                href={msg.attachmentUrl}
-                                download
-                                className="text-primary hover:underline"
-                              >
-                                <Download className="h-4 w-4" />
-                              </a>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  <div ref={messagesEndRef} />
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
