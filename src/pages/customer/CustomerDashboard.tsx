@@ -16,11 +16,31 @@ import {
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useEffect, useState } from 'react';
+import { getVehicleStats } from '@/services/authService';
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
+  const [vehicleCount, setVehicleCount] = useState<number | null>(null);
+  const [loadingVehicles, setLoadingVehicles] = useState(true);
 
   const displayName = user?.firstName || user?.name || 'Customer';
+
+  useEffect(() => {
+    const fetchVehicleStats = async () => {
+      try {
+        const stats = await getVehicleStats();
+        setVehicleCount(stats.totalVehicles);
+      } catch (error) {
+        console.error('Failed to fetch vehicle stats:', error);
+        setVehicleCount(0);
+      } finally {
+        setLoadingVehicles(false);
+      }
+    };
+
+    fetchVehicleStats();
+  }, []);
 
   const stats = [
     {
@@ -31,7 +51,7 @@ export default function CustomerDashboard() {
     },
     {
       label: 'Vehicles Registered',
-      value: '3',
+      value: loadingVehicles ? '...' : vehicleCount?.toString() || '0',
       icon: Car,
       color: 'text-accent',
     },
