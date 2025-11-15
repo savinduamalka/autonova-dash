@@ -8,19 +8,8 @@ import type {
   TaskStatus,
 } from "@/types/project";
 
-const resolveLocalProjectBase = () => {
-  if (typeof window === "undefined") return undefined;
-  const proto = window.location.protocol === "https:" ? "https:" : "http:";
-  const port =
-    import.meta.env.VITE_PROJECT_API_PORT ??
-    import.meta.env.VITE_PROJECT_PORT ??
-    "8082";
-  return `${proto}//${window.location.hostname}:${port}`;
-};
-
 const projectApiBaseUrl =
   sanitizeBaseUrl(import.meta.env.VITE_PROJECT_API_BASE_URL) ??
-  sanitizeBaseUrl(resolveLocalProjectBase()) ??
   apiConfig.API_BASE_URL;
 
 if (import.meta.env.DEV) {
