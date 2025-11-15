@@ -1,6 +1,6 @@
 const DEFAULT_API_BASE_URL = "http://localhost:8080";
 
-const sanitizeBaseUrl = (value?: string | null) => {
+export const sanitizeBaseUrl = (value?: string | null) => {
   if (!value) return undefined;
   const trimmed = value.trim();
   if (!trimmed) return undefined;
@@ -19,6 +19,12 @@ const API_BASE_URL = resolvedBaseUrl;
 
 const AUTH_TOKEN_KEY = 'authToken';
 const AUTH_TOKEN_ISSUED_AT_KEY = 'authTokenIssuedAt';
+
+const isAbsoluteUrl = (value: string) => /^https?:\/\//i.test(value);
+
+export interface ApiRequestOptions extends RequestInit {
+  baseUrl?: string;
+}
 
 const redirectToLogin = () => {
   if (typeof window === 'undefined') return;
@@ -68,9 +74,9 @@ const parseResponseBody = async <T>(response: Response): Promise<T> => {
 
 export async function api<T>(
   path: string,
-  options: RequestInit = {}
+  options: ApiRequestOptions = {}
 ): Promise<T> {
-  const { headers, body, credentials, ...rest } = options;
+  const { headers, body, credentials, baseUrl, ...rest } = options;
 
   const requestHeaders = new Headers(headers ?? {});
 
@@ -83,7 +89,14 @@ export async function api<T>(
     requestHeaders.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const normalizedBaseUrl =
+    baseUrl !== undefined ? sanitizeBaseUrl(baseUrl) : undefined;
+
+  const requestUrl = isAbsoluteUrl(path)
+    ? path
+    : `${normalizedBaseUrl ?? API_BASE_URL}${path}`;
+
+  const response = await fetch(requestUrl, {
     body,
     headers: requestHeaders,
     credentials: credentials ?? 'include',

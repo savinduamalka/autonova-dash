@@ -532,8 +532,8 @@ export default function EmployeeDashboard() {
                 <CardDescription>Your currently active modification projects</CardDescription>
               </div>
               <Button variant="outline" size="sm" asChild>
-                <Link to="/employee/projects">
-                  View All
+                <Link to="/employee/tasks">
+                  Review Tasks
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -617,9 +617,9 @@ export default function EmployeeDashboard() {
                     )}
                   </div>
                   <Button size="sm" variant="default" asChild>
-                    <Link to={`/employee/${task.type === 'service' ? 'services' : 'projects'}/${task.id}`}>
+                    <Link to="/employee/tasks">
                       <PlayCircle className="mr-2 h-4 w-4" />
-                      Start
+                      Open Tasks
                     </Link>
                   </Button>
                 </div>
@@ -806,9 +806,7 @@ function WorkItemCard({ item }: { item: EmployeeWorkItem }) {
 
       <div className="flex items-center gap-2 ml-4">
         <Button size="sm" variant="outline" asChild>
-          <Link to={`/employee/${item.type === 'service' ? 'services' : 'projects'}/${item.id}`}>
-            View Details
-          </Link>
+          <Link to="/employee/tasks">Open Tasks</Link>
         </Button>
       </div>
     </div>
