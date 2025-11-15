@@ -11,7 +11,7 @@ import {
   Project,
 } from "../types/timeLogging";
 
-const API_BASE_URL = "http://localhost:8083/api";
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api`;
 
 // Helper function to map TimeLogResponse to TimeLog
 const mapToTimeLog = (response: TimeLogResponse): TimeLog => ({
