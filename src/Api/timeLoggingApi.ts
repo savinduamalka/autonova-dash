@@ -28,12 +28,26 @@ const mapToTimeLog = (response: TimeLogResponse): TimeLog => ({
   loggedAt: response.loggedAt,
 });
 
-// Get employee ID from auth context or localStorage
+// Get employee ID from authenticated user stored in localStorage
 const getEmployeeId = (): number => {
-  // Will replace this with actual auth logic when Auth Service is integrated
-  const storedId = localStorage.getItem("employeeId");
-  // Parse as number since backend expects Long/BIGINT
-  return storedId ? parseInt(storedId, 10) : 1; // Default to user ID 1
+  try {
+    const authUserStr = localStorage.getItem("authUser");
+    if (!authUserStr) {
+      console.warn("No authenticated user found in localStorage");
+      throw new Error("User not authenticated. Please log in.");
+    }
+    
+    const authUser = JSON.parse(authUserStr);
+    if (!authUser.id) {
+      console.error("Auth user exists but has no ID:", authUser);
+      throw new Error("Invalid user data. Please log in again.");
+    }
+    
+    return authUser.id;
+  } catch (error) {
+    console.error("Failed to get employee ID:", error);
+    throw error;
+  }
 };
 
 export const timeLoggingApi = {
