@@ -7,9 +7,7 @@ export default defineConfig(() => ({
     host: '::',
     proxy: {
       '/api': {
-        // Forward frontend /api requests to the API gateway (port 8080).
-        // The gateway is responsible for routing to the actual services (e.g. book-appointment-service on 8088).
-        target: 'http://localhost:8080', // Gateway base URL
+        target: process.env.VITE_API_BASE_URL || 'http://localhost:8082',
         changeOrigin: true,
         secure: false,
       },

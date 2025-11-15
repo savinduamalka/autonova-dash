@@ -4,7 +4,6 @@ import {
   Wrench,
   CreditCard,
   FileText,
-  TrendingUp,
 } from 'lucide-react';
 import {
   Card,
@@ -18,6 +17,11 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { getVehicleStats } from '@/services/authService';
+import { StatusBadge } from '@/components/projects/StatusBadge';
+import { useQuery } from '@tanstack/react-query';
+import { fetchCustomerProjects } from '@/services/projectService';
+import type { ProjectSummary } from '@/types/project';
+import { format } from 'date-fns';
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
@@ -41,6 +45,12 @@ export default function CustomerDashboard() {
 
     fetchVehicleStats();
   }, []);
+
+  const { data: projects } = useQuery<ProjectSummary[]>({
+    queryKey: ['customer-projects'],
+    queryFn: fetchCustomerProjects,
+    staleTime: 60 * 1000,
+  });
 
   const stats = [
     {
@@ -167,6 +177,46 @@ export default function CustomerDashboard() {
           ))}
         </div>
       </div>
+
+      {projects && projects.length > 0 && (
+        <Card>
+          <CardHeader className="flex items-center justify-between">
+            <div>
+              <CardTitle>Your Projects</CardTitle>
+              <CardDescription>Latest vehicle modifications in progress</CardDescription>
+            </div>
+            <Button variant="outline" asChild>
+              <Link to="/customer/appointments">Track all</Link>
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {projects.slice(0, 3).map((project) => (
+              <div key={project.projectId} className="border rounded-lg p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{project.title}</p>
+                    <p className="text-sm text-muted-foreground">Vehicle: {project.vehicleId}</p>
+                  </div>
+                  <StatusBadge status={project.status} />
+                </div>
+                <div className="text-sm text-muted-foreground flex gap-4">
+                  <span>
+                    Requested:{' '}
+                    {project.requestedStart ? format(new Date(project.requestedStart), 'MMM d') : 'N/A'}
+                  </span>
+                  <span>
+                    Approved:{' '}
+                    {project.approvedStart ? format(new Date(project.approvedStart), 'MMM d') : 'Pending'}
+                  </span>
+                </div>
+                <Button size="sm" variant="outline" asChild>
+                  <Link to={`/customer/progress/${project.projectId}`}>View details</Link>
+                </Button>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Upcoming Appointments */}
       <Card>
