@@ -7,6 +7,7 @@ import type {
   ProjectTask,
   TaskStatus,
 } from "@/types/project";
+import type { AdminAppointment } from "@/types/appointment";
 
 const resolveLocalProjectBase = () => {
   if (typeof window === "undefined") return undefined;
@@ -93,5 +94,26 @@ export const updateTaskStatus = async (taskId: string, status: TaskStatus, note?
   await projectApi(`/api/tasks/${taskId}/status`, {
     method: "PATCH",
     body: JSON.stringify({ status, note }),
+  });
+};
+
+export const listAdminAppointments = async (status?: string, from?: string, to?: string): Promise<AdminAppointment[]> => {
+  const query = toQuery({
+    status,
+    from,
+    to,
+  });
+  const suffix = query ? `?${query}` : "";
+  return projectApi<AdminAppointment[]>(`/api/admin/appointments${suffix}`);
+};
+
+export const getAdminAppointment = async (id: string): Promise<AdminAppointment> => {
+  return projectApi<AdminAppointment>(`/api/admin/appointments/${id}`);
+};
+
+export const updateAdminAppointmentStatus = async (id: string, status: string, adminNote?: string): Promise<void> => {
+  await projectApi(`/api/admin/appointments/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status, adminNote }),
   });
 };
