@@ -1,30 +1,33 @@
 // Response from backend API
 export interface TimeLogResponse {
-  id: string;
-  projectId: string;
+  id: string; // UUID
+  projectId: string; // UUID
   projectTitle: string;
-  taskId: string;
+  taskId: string; // UUID
   taskName: string;
-  employeeId: string;
+  employeeId: number; // Long/BIGINT from backend
   employeeName: string;
   hours: number;
   note?: string;
   approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
+  rejectionReason?: string;
+  approvedBy?: number; // Long/BIGINT
+  approvedAt?: string;
   loggedAt: string; // ISO 8601 format
 }
 
 // Request payload for creating/updating time logs
 export interface TimeLogRequest {
-  projectId: string;
-  taskId: string;
-  employeeId: string;
+  projectId: string; // UUID
+  taskId: string; // UUID
+  employeeId: number; // Long/BIGINT from backend
   hours: number;
   note?: string;
 }
 
 // Project response from backend
 export interface ProjectResponse {
-  id: string;
+  id: string; // UUID (ProjectId)
   customerId: string;
   customerName: string;
   vehicleId: string;
@@ -41,11 +44,11 @@ export interface ProjectResponse {
 
 // Task response from backend
 export interface TaskResponse {
-  id: string;
-  projectId: string;
+  id: string; // UUID (TaskId)
+  projectId: string; // UUID
   taskName: string;
   description?: string;
-  assignedEmployeeId?: string;
+  assignedEmployeeId?: number; // Long/BIGINT (maps to users.id)
   assignedEmployeeName?: string;
   estimatedHours?: number;
   actualHours: number;
@@ -56,7 +59,7 @@ export interface TaskResponse {
 
 // Employee summary response from backend
 export interface EmployeeSummaryResponse {
-  employeeId: string;
+  employeeId: number; // Long/BIGINT from backend
   employeeName: string;
   totalHours: number;
   hourlyRate: number;
@@ -125,12 +128,12 @@ export interface Project {
 
 // Time log data for history display (mapped from TimeLogResponse)
 export interface TimeLog {
-  id: string;
-  projectId: string;
+  id: string; // UUID
+  projectId: string; // UUID
   projectTitle: string;
-  taskId: string;
+  taskId: string; // UUID
   taskName: string;
-  employeeId: string;
+  employeeId: number; // Long/BIGINT from backend
   employeeName: string;
   hours: number;
   note?: string;

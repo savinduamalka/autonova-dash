@@ -1,4 +1,5 @@
 import axios from "axios";
+import { api } from "@/lib/api/client";
 import {
   TimeLogResponse,
   TimeLogRequest,
@@ -11,7 +12,21 @@ import {
   Project,
 } from "../types/timeLogging";
 
-const API_BASE_URL = "http://localhost:8083/api";
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api`;
+
+// Create axios instance with auth interceptor
+const axiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+// Add auth token to all requests
+axiosInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem("authToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 // Helper function to map TimeLogResponse to TimeLog
 const mapToTimeLog = (response: TimeLogResponse): TimeLog => ({
@@ -28,17 +43,33 @@ const mapToTimeLog = (response: TimeLogResponse): TimeLog => ({
   loggedAt: response.loggedAt,
 });
 
-// Get employee ID from auth context or localStorage
-const getEmployeeId = (): string => {
-  // Will replace this with actual auth logic when Auth Service is integrated
-  return localStorage.getItem("employeeId") || "emp-001";
+// Get employee ID from authenticated user stored in localStorage
+const getEmployeeId = (): number => {
+  try {
+    const authUserStr = localStorage.getItem("authUser");
+    if (!authUserStr) {
+      console.warn("No authenticated user found in localStorage");
+      throw new Error("User not authenticated. Please log in.");
+    }
+    
+    const authUser = JSON.parse(authUserStr);
+    if (!authUser.id) {
+      console.error("Auth user exists but has no ID:", authUser);
+      throw new Error("Invalid user data. Please log in again.");
+    }
+    
+    return authUser.id;
+  } catch (error) {
+    console.error("Failed to get employee ID:", error);
+    throw error;
+  }
 };
 
 export const timeLoggingApi = {
   // Get all time logs for logged-in employee
   getMyTimeLogs: async (): Promise<TimeLog[]> => {
     const employeeId = getEmployeeId();
-    const response = await axios.get<TimeLogResponse[]>(
+    const response = await axiosInstance.get<TimeLogResponse[]>(
       `${API_BASE_URL}/time-logs/employee/${employeeId}`
     );
     return response.data.map(mapToTimeLog);
@@ -46,7 +77,7 @@ export const timeLoggingApi = {
 
   // Get time logs for a specific project
   getProjectTimeLogs: async (projectId: string): Promise<TimeLogResponse[]> => {
-    const response = await axios.get<TimeLogResponse[]>(
+    const response = await axiosInstance.get<TimeLogResponse[]>(
       `${API_BASE_URL}/time-logs/project/${projectId}`
     );
     return response.data;
@@ -54,7 +85,7 @@ export const timeLoggingApi = {
 
   // Get time logs for a specific task
   getTaskTimeLogs: async (taskId: string): Promise<TimeLogResponse[]> => {
-    const response = await axios.get<TimeLogResponse[]>(
+    const response = await axiosInstance.get<TimeLogResponse[]>(
       `${API_BASE_URL}/time-logs/task/${taskId}`
     );
     return response.data;
@@ -62,7 +93,7 @@ export const timeLoggingApi = {
 
   // Get specific time log by ID
   getTimeLogById: async (id: string): Promise<TimeLogResponse> => {
-    const response = await axios.get<TimeLogResponse>(
+    const response = await axiosInstance.get<TimeLogResponse>(
       `${API_BASE_URL}/time-logs/${id}`
     );
     return response.data;
@@ -71,7 +102,7 @@ export const timeLoggingApi = {
   // Get projects assigned to logged-in employee
   getAssignedProjects: async (): Promise<Project[]> => {
     const employeeId = getEmployeeId();
-    const response = await axios.get<ProjectResponse[]>(
+    const response = await axiosInstance.get<ProjectResponse[]>(
       `${API_BASE_URL}/projects/employee/${employeeId}`
     );
 
@@ -79,7 +110,7 @@ export const timeLoggingApi = {
     const projectsWithTasks = await Promise.all(
       response.data.map(async (project) => {
         try {
-          const tasksResponse = await axios.get<TaskResponse[]>(
+          const tasksResponse = await axiosInstance.get<TaskResponse[]>(
             `${API_BASE_URL}/tasks/project/${project.id}`
           );
 
@@ -134,7 +165,7 @@ export const timeLoggingApi = {
 
   // Get all active projects
   getActiveProjects: async (): Promise<Project[]> => {
-    const response = await axios.get<ProjectResponse[]>(
+    const response = await axiosInstance.get<ProjectResponse[]>(
       `${API_BASE_URL}/projects/active`
     );
 
@@ -142,7 +173,7 @@ export const timeLoggingApi = {
     const projectsWithTasks = await Promise.all(
       response.data.map(async (project) => {
         try {
-          const tasksResponse = await axios.get<TaskResponse[]>(
+          const tasksResponse = await axiosInstance.get<TaskResponse[]>(
             `${API_BASE_URL}/tasks/project/${project.id}`
           );
 
@@ -188,13 +219,13 @@ export const timeLoggingApi = {
 
   // Get specific project by ID
   getProjectById: async (projectId: string): Promise<Project> => {
-    const response = await axios.get<ProjectResponse>(
+    const response = await axiosInstance.get<ProjectResponse>(
       `${API_BASE_URL}/projects/${projectId}`
     );
 
     // Fetch tasks for the project
     try {
-      const tasksResponse = await axios.get<TaskResponse[]>(
+      const tasksResponse = await axiosInstance.get<TaskResponse[]>(
         `${API_BASE_URL}/tasks/project/${projectId}`
       );
 
@@ -233,7 +264,7 @@ export const timeLoggingApi = {
 
   // Get tasks for a specific project
   getProjectTasks: async (projectId: string): Promise<TaskResponse[]> => {
-    const response = await axios.get<TaskResponse[]>(
+    const response = await axiosInstance.get<TaskResponse[]>(
       `${API_BASE_URL}/tasks/project/${projectId}`
     );
     return response.data;
@@ -242,7 +273,7 @@ export const timeLoggingApi = {
   // Get tasks assigned to logged-in employee
   getMyTasks: async (): Promise<TaskResponse[]> => {
     const employeeId = getEmployeeId();
-    const response = await axios.get<TaskResponse[]>(
+    const response = await axiosInstance.get<TaskResponse[]>(
       `${API_BASE_URL}/tasks/employee/${employeeId}`
     );
     return response.data;
@@ -251,7 +282,7 @@ export const timeLoggingApi = {
   // Get incomplete tasks for logged-in employee
   getMyIncompleteTasks: async (): Promise<TaskResponse[]> => {
     const employeeId = getEmployeeId();
-    const response = await axios.get<TaskResponse[]>(
+    const response = await axiosInstance.get<TaskResponse[]>(
       `${API_BASE_URL}/tasks/employee/${employeeId}/incomplete`
     );
     return response.data;
@@ -259,7 +290,7 @@ export const timeLoggingApi = {
 
   // Get specific task by ID
   getTaskById: async (taskId: string): Promise<TaskResponse> => {
-    const response = await axios.get<TaskResponse>(
+    const response = await axiosInstance.get<TaskResponse>(
       `${API_BASE_URL}/tasks/${taskId}`
     );
     return response.data;
@@ -272,7 +303,7 @@ export const timeLoggingApi = {
       ...data,
       employeeId,
     };
-    const response = await axios.post<TimeLogResponse>(
+    const response = await axiosInstance.post<TimeLogResponse>(
       `${API_BASE_URL}/time-logs`,
       requestData
     );
@@ -289,7 +320,7 @@ export const timeLoggingApi = {
       ...data,
       employeeId,
     };
-    const response = await axios.put<TimeLogResponse>(
+    const response = await axiosInstance.put<TimeLogResponse>(
       `${API_BASE_URL}/time-logs/${id}`,
       requestData
     );
@@ -298,13 +329,13 @@ export const timeLoggingApi = {
 
   // Delete time log
   deleteTimeLog: async (id: string): Promise<void> => {
-    await axios.delete(`${API_BASE_URL}/time-logs/${id}`);
+    await axiosInstance.delete(`${API_BASE_URL}/time-logs/${id}`);
   },
 
   // Get total hours for logged-in employee
   getTotalHours: async (): Promise<number> => {
     const employeeId = getEmployeeId();
-    const response = await axios.get<number>(
+    const response = await axiosInstance.get<number>(
       `${API_BASE_URL}/time-logs/employee/${employeeId}/total-hours`
     );
     return response.data;
@@ -313,7 +344,7 @@ export const timeLoggingApi = {
   // Get employee summary (hours, rate, earnings)
   getEmployeeSummary: async (): Promise<EmployeeSummaryResponse> => {
     const employeeId = getEmployeeId();
-    const response = await axios.get<EmployeeSummaryResponse>(
+    const response = await axiosInstance.get<EmployeeSummaryResponse>(
       `${API_BASE_URL}/time-logs/employee/${employeeId}/summary`
     );
     return response.data;
@@ -324,7 +355,7 @@ export const timeLoggingApi = {
     projectId: string
   ): Promise<TimeLogResponse[]> => {
     const employeeId = getEmployeeId();
-    const response = await axios.get<TimeLogResponse[]>(
+    const response = await axiosInstance.get<TimeLogResponse[]>(
       `${API_BASE_URL}/time-logs/employee/${employeeId}/project/${projectId}`
     );
     return response.data;
@@ -333,7 +364,7 @@ export const timeLoggingApi = {
   // Get weekly summary data for analytics
   getWeeklySummary: async (): Promise<WeeklySummaryData> => {
     const employeeId = getEmployeeId();
-    const response = await axios.get<WeeklySummaryData>(
+    const response = await axiosInstance.get<WeeklySummaryData>(
       `${API_BASE_URL}/time-logs/employee/${employeeId}/weekly-summary`
     );
     return response.data;
@@ -350,7 +381,7 @@ export const timeLoggingApi = {
     }[]
   > => {
     const employeeId = getEmployeeId();
-    const response = await axios.get(
+    const response = await axiosInstance.get(
       `${API_BASE_URL}/time-logs/employee/${employeeId}/smart-suggestions`
     );
     return response.data;
@@ -368,7 +399,7 @@ export const timeLoggingApi = {
     };
   }> => {
     const employeeId = getEmployeeId();
-    const response = await axios.get(
+    const response = await axiosInstance.get(
       `${API_BASE_URL}/time-logs/employee/${employeeId}/efficiency-metrics`
     );
     return response.data;
@@ -377,15 +408,15 @@ export const timeLoggingApi = {
   // Admin endpoints
   // Get all time logs for admin (all statuses)
   getAllTimeLogs: async (): Promise<TimeLog[]> => {
-    const response = await axios.get<TimeLogResponse[]>(
-      `${API_BASE_URL}/time-logs`
+    const response = await axiosInstance.get<TimeLogResponse[]>(
+      `${API_BASE_URL}/time-logs/all`
     );
     return response.data.map(mapToTimeLog);
   },
 
   // Get all pending time logs for approval
   getPendingTimeLogs: async (): Promise<TimeLog[]> => {
-    const response = await axios.get<TimeLogResponse[]>(
+    const response = await axiosInstance.get<TimeLogResponse[]>(
       `${API_BASE_URL}/time-logs/pending`
     );
     return response.data.map(mapToTimeLog);
@@ -393,7 +424,7 @@ export const timeLoggingApi = {
 
   // Approve a time log
   approveTimeLog: async (timeLogId: string): Promise<TimeLog> => {
-    const response = await axios.patch<TimeLogResponse>(
+    const response = await axiosInstance.patch<TimeLogResponse>(
       `${API_BASE_URL}/time-logs/${timeLogId}/approve`
     );
     return mapToTimeLog(response.data);
@@ -404,10 +435,11 @@ export const timeLoggingApi = {
     timeLogId: string,
     reason: string
   ): Promise<TimeLog> => {
-    const response = await axios.patch<TimeLogResponse>(
+    const response = await axiosInstance.patch<TimeLogResponse>(
       `${API_BASE_URL}/time-logs/${timeLogId}/reject`,
       { reason }
     );
     return mapToTimeLog(response.data);
   },
 };
+

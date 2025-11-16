@@ -97,82 +97,92 @@ export const SmartSuggestions = ({
       </div>
 
       <div className="space-y-3">
-        {suggestions.slice(0, 3).map((suggestion, index) => (
-          <div
-            key={suggestion.task.id}
-            className={`p-4 bg-white rounded-lg border-2 transition-all hover:shadow-md ${
-              index === 0 ? "border-indigo-300" : "border-gray-200"
-            }`}
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                {/* Priority Badge */}
-                <div className="flex items-center gap-2 mb-2">
-                  {index === 0 && (
-                    <Badge className="bg-indigo-600 text-white">
-                      <Star className="w-3 h-3 mr-1" />
-                      Top Pick
+        {suggestions.slice(0, 3).map((suggestion, index) => {
+          // Safety check: skip if task is null or invalid
+          if (!suggestion.task || !suggestion.task.id) {
+            return null;
+          }
+
+          return (
+            <div
+              key={suggestion.task.id}
+              className={`p-4 bg-white rounded-lg border-2 transition-all hover:shadow-md ${
+                index === 0 ? "border-indigo-300" : "border-gray-200"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  {/* Priority Badge */}
+                  <div className="flex items-center gap-2 mb-2">
+                    {index === 0 && (
+                      <Badge className="bg-indigo-600 text-white">
+                        <Star className="w-3 h-3 mr-1" />
+                        Top Pick
+                      </Badge>
+                    )}
+                    <Badge className={getUrgencyColor(suggestion.urgency)}>
+                      {getUrgencyLabel(suggestion.urgency)}
                     </Badge>
-                  )}
-                  <Badge className={getUrgencyColor(suggestion.urgency)}>
-                    {getUrgencyLabel(suggestion.urgency)}
-                  </Badge>
-                </div>
+                  </div>
 
-                {/* Task Info */}
-                <div className="mb-2">
-                  <h4 className="font-semibold text-gray-900 text-base">
-                    {suggestion.task.taskName}
-                  </h4>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {suggestion.projectTitle}
-                  </p>
-                </div>
+                  {/* Task Info */}
+                  <div className="mb-2">
+                    <h4 className="font-semibold text-gray-900 text-base">
+                      {suggestion.task.taskName || "Task"}
+                    </h4>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {suggestion.projectTitle}
+                    </p>
+                  </div>
 
-                {/* Reason */}
-                <div className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 p-2 rounded">
-                  {getReasonIcon(suggestion.icon)}
-                  <span>{suggestion.reason}</span>
-                </div>
+                  {/* Reason */}
+                  <div className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 p-2 rounded">
+                    {getReasonIcon(suggestion.icon)}
+                    <span>{suggestion.reason}</span>
+                  </div>
 
-                {/* Task Details */}
-                <div className="flex items-center gap-4 mt-3 text-xs text-gray-600">
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {suggestion.task.estimatedHours?.toFixed(2) || "?"}h
-                    estimated
-                  </span>
-                  {suggestion.task.dueDate && (
+                  {/* Task Details */}
+                  <div className="flex items-center gap-4 mt-3 text-xs text-gray-600">
                     <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      Due:{" "}
-                      {new Date(suggestion.task.dueDate).toLocaleDateString()}
+                      <Clock className="w-3 h-3" />
+                      {suggestion.task.estimatedHours?.toFixed(2) || "?"}h
+                      estimated
                     </span>
-                  )}
+                    {suggestion.task.dueDate && (
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        Due:{" "}
+                        {new Date(suggestion.task.dueDate).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* Action Button */}
-              {activeTaskId === suggestion.task.id ? (
-                <Button disabled className="gap-2 shrink-0" size="sm">
-                  <Clock className="w-4 h-4" />
-                  Running
-                </Button>
-              ) : (
-                <Button
-                  onClick={() =>
-                    onStartTask(suggestion.task.projectId, suggestion.task.id)
-                  }
-                  className="bg-indigo-600 hover:bg-indigo-700 gap-2 shrink-0"
-                  size="sm"
-                >
-                  <Play className="w-4 h-4" />
-                  Start Now
-                </Button>
-              )}
+                {/* Action Button */}
+                {activeTaskId === suggestion.task.id ? (
+                  <Button disabled className="gap-2 shrink-0" size="sm">
+                    <Clock className="w-4 h-4" />
+                    Running
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() =>
+                      onStartTask(
+                        suggestion.task.projectId || "",
+                        suggestion.task.id
+                      )
+                    }
+                    className="bg-indigo-600 hover:bg-indigo-700 gap-2 shrink-0"
+                    size="sm"
+                  >
+                    <Play className="w-4 h-4" />
+                    Start Now
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Footer Tip */}
