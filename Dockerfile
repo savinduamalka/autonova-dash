@@ -11,7 +11,7 @@ RUN npm install --silent
 COPY . .
 
 # Accept build-time arguments for environment variables
-ARG VITE_API_BASE_URL=http://209.38.58.147:8080
+ARG VITE_API_BASE_URL=http://137.184.251.141:8080
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 RUN npm run build
