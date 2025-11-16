@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import EmployeeSidebar from "@/components/layout/EmployeeSidebar";
+import AdminSidebar from "@/components/layout/AdminSidebar";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Select,
   SelectContent,
@@ -116,6 +118,7 @@ const categoryOptions: EventCategory[] = [
 
 export default function EmployeeProjectProgressPage() {
   const { projectId } = useParams<{ projectId: string }>();
+  const { user } = useAuth();
   const [project, setProject] = useState<ProjectDetails | null>(null);
   const [messages, setMessages] = useState<ProjectMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -251,9 +254,12 @@ export default function EmployeeProjectProgressPage() {
     }
   };
 
+  // Determine which sidebar to use based on user role
+  const sidebar = user?.role === "ADMIN" ? <AdminSidebar /> : <EmployeeSidebar />;
+
   if (!projectId) {
     return (
-      <DashboardLayout sidebar={<EmployeeSidebar />}>
+      <DashboardLayout sidebar={sidebar}>
         <p className="p-4">Missing project ID.</p>
       </DashboardLayout>
     );
@@ -261,7 +267,7 @@ export default function EmployeeProjectProgressPage() {
 
   if (loading) {
     return (
-      <DashboardLayout sidebar={<EmployeeSidebar />}>
+      <DashboardLayout sidebar={sidebar}>
         <div className="mx-auto max-w-7xl space-y-6 p-4">
           <div className="space-y-4">
             <Skeleton className="h-8 w-48" />
@@ -284,7 +290,7 @@ export default function EmployeeProjectProgressPage() {
 
   if (error || !project) {
     return (
-      <DashboardLayout sidebar={<EmployeeSidebar />}>
+      <DashboardLayout sidebar={sidebar}>
         <div className="p-4">
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
             <p className="text-destructive">{error ?? "Project not found."}</p>
@@ -295,7 +301,7 @@ export default function EmployeeProjectProgressPage() {
   }
 
   return (
-    <DashboardLayout sidebar={<EmployeeSidebar />}>
+    <DashboardLayout sidebar={sidebar}>
       <div className="mx-auto max-w-7xl space-y-6 p-4">
       {/* Header */}
       <div className="flex flex-col gap-4">
